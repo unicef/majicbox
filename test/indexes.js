@@ -1,27 +1,65 @@
-var utils = require('util');
-var User = require('../app/models/user');
+var util = require('./util');
+var config = require('../config');
+var should = require('should');
+var mongoose = require('mongoose');
+
+var thingSchema = new mongoose.Schema(
+  {
+    age: {type: Number, index: true},
+    height: {type: Number},
+    build: {type: String}
+  }, {collection: 'things'}
+);
+
+var Thing = mongoose.model('Thing', thingSchema);
+
+// ensure the NODE_ENV is set to 'test'
+// this is helpful when you would like to change behavior when testing
+process.env.NODE_ENV = 'test';
+
+beforeEach(function(done) {
+  if (mongoose.connection.readyState === 0) {
+    mongoose.connect(config.testdb, function(err) {
+      if (err) {
+        throw err;
+      }
+      return util.clearDB(done);
+    });
+  } else {
+    return util.clearDB(done);
+  }
+});
+
+afterEach(function(done) {
+  mongoose.disconnect();
+  return done();
+});
 
 describe('Mongoose indexes persist in mongodb', function() {
-  describe('#create()', function() {
-    it('Should fail with duplicate name error', function(done) {
-      var user1 = new User({
-        name: 'Andy'
-      });
+  it('Should reveal one index only on age', function(done) {
+    var thing = new Thing({
+      age: 140,
+      height: 4,
+      build: 'short'
+    });
 
-      var user2 = new User({
-        name: 'Andy'
-      });
-
-      user1.save().then(function() {
-      }).then(function() {
-        user2.save().then(function() {
-          // TODO(mikefab): Catch error
-          // When names are different, test hangs with:
-          // "Error: timeout of 2000ms exceeded. Ensure the done() callback is being called in this test."
-        }, function(err) {
-          err.message.match(/duplicate/);
+    thing.save(function() {
+      thing.collection.getIndexes(function(err, results) {
+        if (err) {
           done();
-        });
+        }
+        // Index should exist for age
+        Object.keys(results).filter(
+          function(e) {
+            return e === 'age_1';
+          }
+          ).length.should.equal(1);
+        // Index should not exist for height
+        Object.keys(results).filter(
+          function(e) {
+            return e === 'height_1';
+          }).length.should.equal(0);
+        done();
       });
     });
   });
