@@ -1,0 +1,19 @@
+{
+  "extends": "google",
+  "rules": {
+    // Allow underscore_separated_names.
+    "camelcase": 0,
+    // No warning on TODOs.
+    "no-warning-comments": 0,
+    // Welcome to node.
+    "max-nested-callbacks": 0,
+    // else's after returns are _good_ style!
+    "no-else-return": 0,
+    // Allow single lines.
+    "brace-style": [2, "1tbs", { "allowSingleLine": true }]
+  },
+  "env": {
+    // Don't warn for Mocha globals.
+    "mocha": true
+  }
+}
