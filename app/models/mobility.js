@@ -18,7 +18,15 @@ var mobility_schema = new mongoose.Schema({
   date: Date,
   // Data subtype (e.g. "daily"/"hourly", "day"/"night", etc.).
   kind: String,
-  // ISO 3166-1 alpha-2 two letter country code in lowercase.
+  // ISO 3166-1 alpha-2 two letter country code.
+  //
+  // Note: this country applies to both the origin and destination region codes,
+  // so this schema can't represent inter-country mobility. There are a few
+  // options to enable that, if we need it:
+  // * Rename `country_code` to `origin_country_code`, and add country codes to
+  //   all the destination data.
+  // * Change the Region schema's region_code to be globally unique (currently,
+  //   they only need to be unique within a country).
   country_code: String,
 
   // Movement origin. Should match a Region document's region_code.
