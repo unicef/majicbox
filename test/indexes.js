@@ -1,7 +1,6 @@
 var assert = require('assert');
 var mongoose = require('mongoose');
 
-var config = require('../config');
 var testutil = require('./testutil');
 
 var thingSchema = new mongoose.Schema({
@@ -17,14 +16,7 @@ var Thing = mongoose.model('Thing', thingSchema);
 process.env.NODE_ENV = 'test';
 
 beforeEach(function(done) {
-  if (mongoose.connection.readyState === 0) {
-    mongoose.connect(config.testdb, function(err) {
-      if (err) {throw err;}
-      return testutil.clearDB(done);
-    });
-  } else {
-    return testutil.clearDB(done);
-  }
+  testutil.connectAndClearTestDb(done);
 });
 
 afterEach(function(done) {
