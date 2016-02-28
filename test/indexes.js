@@ -1,16 +1,17 @@
-var util = require('./util');
-var config = require('../config');
 var assert = require('assert');
 var mongoose = require('mongoose');
-var thingSchema = new mongoose.Schema(
-  {
-    age: {type: Number, index: true},
-    height: {type: Number}
-  }
-);
+
+var config = require('../config');
+var testutil = require('./testutil');
+
+var thingSchema = new mongoose.Schema({
+  age: {type: Number, index: true},
+  height: {type: Number}
+});
 
 var Thing = mongoose.model('Thing', thingSchema);
 
+// TODO(jetpack): Is this actually needed for anything?
 // ensure the NODE_ENV is set to 'test'
 // this is helpful when you would like to change behavior when testing
 process.env.NODE_ENV = 'test';
@@ -19,10 +20,10 @@ beforeEach(function(done) {
   if (mongoose.connection.readyState === 0) {
     mongoose.connect(config.testdb, function(err) {
       if (err) {throw err;}
-      return util.clearDB(done);
+      return testutil.clearDB(done);
     });
   } else {
-    return util.clearDB(done);
+    return testutil.clearDB(done);
   }
 });
 
@@ -43,29 +44,13 @@ describe('Mongoose indexes persist in mongodb', function() {
         if (err) { return done(err); }
 
         var should_have_elem = Object.keys(results).filter(
-          function(e) {
-            return e === 'age_1';
-          }
-        );
-
+          function(e) { return e === 'age_1'; });
         var should_not_have_elem = Object.keys(results).filter(
-          function(e) {
-            return e === 'height_1';
-          }
-        );
-
-        assert.strictEqual(
-          should_have_elem.length,
-          1,
-          'Index should exist for age'
-        );
-
-        assert.strictEqual(
-          should_not_have_elem.length,
-          0,
-          'Index should not exist for height'
-        );
-
+          function(e) { return e === 'height_1'; });
+        assert.strictEqual(should_have_elem.length, 1,
+                           'Index should exist for age');
+        assert.strictEqual(should_not_have_elem.length, 0,
+                           'Index should not exist for height');
         done();
       });
     });
