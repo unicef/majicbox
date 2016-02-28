@@ -10,21 +10,15 @@ var thingSchema = new mongoose.Schema({
 
 var Thing = mongoose.model('Thing', thingSchema);
 
-// TODO(jetpack): Is this actually needed for anything?
-// ensure the NODE_ENV is set to 'test'
-// this is helpful when you would like to change behavior when testing
-process.env.NODE_ENV = 'test';
-
-beforeEach(function() {
-  return testutil.connectAndClearTestDb();
-});
-
-afterEach(function(done) {
-  mongoose.disconnect();
-  return done();
-});
-
 describe('Mongoose indexes persist in mongodb', function() {
+  beforeEach(function() {
+    return testutil.connectAndClearTestDb();
+  });
+
+  afterEach(function(done) {
+    mongoose.disconnect(done);
+  });
+
   it('Should reveal one index only on age', function(done) {
     var thing = new Thing({
       age: 140,
