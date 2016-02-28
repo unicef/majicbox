@@ -25,6 +25,11 @@ var weather_schema = new mongoose.Schema({
     temp_mean: Number,
     temp_min: Number,
     temp_max: Number
+  },
+
+  // TODO(jetpack): Need anything else here?
+  meta: {
+    source: String
   }
 });
 

@@ -28,7 +28,12 @@ var mobility_schema = new mongoose.Schema({
   origin_region_code: String,
   destination_region_code: String,
   // Amount of movement from origin to destination.
-  count: Number
+  count: Number,
+
+  // TODO(jetpack): Need anything else here?
+  meta: {
+    source: String
+  }
 });
 
 // NOTE: Deciding which fields to index on and in what order is subtle, and
