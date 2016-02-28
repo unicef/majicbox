@@ -18,9 +18,8 @@ process.env.NODE_ENV = 'test';
 beforeEach(function(done) {
   if (mongoose.connection.readyState === 0) {
     mongoose.connect(config.testdb, function(err) {
-      if (err) {
-        throw err;
-      }
+      if (err) throw err;
+
       return util.clearDB(done);
     });
   } else {
