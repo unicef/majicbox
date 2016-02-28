@@ -9,11 +9,13 @@
   "dependencies": {
     "apicache": "0.0.12",
     "body-parser": "^1.15.0",
+    "compression": "^1.6.1",
     "express": "^4.13.4",
     "lodash": "^4.5.1",
     "mocha": "^2.4.5",
     "mongoose": "^4.4.5",
     "mongoose-geojson-schema": "0.0.2",
+    "morgan": "^1.7.0",
     "should": "^8.2.2"
   },
   "devDependencies": {
