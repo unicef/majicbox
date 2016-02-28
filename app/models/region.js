@@ -21,4 +21,6 @@ var region_schema = new mongoose.Schema({
   // geo_feature_simplified: GeoJSON.Feature
 });
 
+region_schema.index({country_code: 1, region_code: 1});
+
 module.exports = mongoose.model('Region', region_schema);
