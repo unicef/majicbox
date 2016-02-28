@@ -1,8 +1,7 @@
 var util = require('./util');
 var config = require('../config');
-var should = require('should');
+var assert = require('assert');
 var mongoose = require('mongoose');
-
 var thingSchema = new mongoose.Schema(
   {
     age: {type: Number, index: true},
@@ -48,17 +47,27 @@ describe('Mongoose indexes persist in mongodb', function() {
         if (err) {
           done();
         }
-        // Index should exist for age
-        Object.keys(results).filter(
+
+        var should_have_elem = Object.keys(results).filter(
           function(e) {
             return e === 'age_1';
           }
-          ).length.should.equal(1);
-        // Index should not exist for height
-        Object.keys(results).filter(
+        );
+
+        var should_not_have_elem = Object.keys(results).filter(
           function(e) {
             return e === 'height_1';
-          }).length.should.equal(0);
+          }
+        );
+
+        assert(
+          should_have_elem.length > 0, 'Index should exist for age'
+        );
+
+        assert(
+          should_not_have_elem.length === 0, 'Index should not exist for height'
+        );
+
         done();
       });
     });
