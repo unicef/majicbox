@@ -5,9 +5,8 @@ var mongoose = require('mongoose');
 var thingSchema = new mongoose.Schema(
   {
     age: {type: Number, index: true},
-    height: {type: Number},
-    build: {type: String}
-  }, {collection: 'things'}
+    height: {type: Number}
+  }
 );
 
 var Thing = mongoose.model('Thing', thingSchema);
@@ -38,8 +37,7 @@ describe('Mongoose indexes persist in mongodb', function() {
   it('Should reveal one index only on age', function(done) {
     var thing = new Thing({
       age: 140,
-      height: 4,
-      build: 'short'
+      height: 4
     });
 
     thing.save(function() {
