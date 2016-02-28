@@ -54,15 +54,23 @@ describe('Mongoose indexes persist in mongodb', function() {
           }
         );
 
-        assert(
-          should_have_elem.length === 1, 'Index should exist for age'
-        );
+        new Promise(function(resolve) {
+          resolve(false);
+        }).then(function() {
+          assert(
+            should_have_elem.length === 1,
+            'Index should exist for age'
+          );
 
-        assert(
-          should_not_have_elem.length === 0, 'Index should not exist for height'
-        );
+          assert(
+            should_not_have_elem.length === 0,
+            'Index should not exist for height'
+          );
 
-        done();
+          done();
+        }).catch(function(err) {
+          done(err);
+        });
       });
     });
   });
