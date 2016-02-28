@@ -22,8 +22,8 @@ describe('get_region_populations', function() {
       count: count});
   }
 
-  before(function initializeDatabase() {
-    return testutil.connectAndClearTestDb().then(function() {
+  before(function initialize_database() {
+    return testutil.connect_and_clear_test_db().then(function() {
       var regions = [
         new Region({country_code: country_code, region_code: 'br1'}),
         new Region({country_code: country_code, region_code: 'br2'}),
@@ -43,19 +43,11 @@ describe('get_region_populations', function() {
         movement(date2, 'br2', 'br2', 2000),  // br2 self-migration
         movement(date2, 'br3', 'br3', 3000)  // br3 self-migration
       ];
-      var promises = _.concat(regions, mobility).map(function(doc) {
-        return new Promise(function(res, rej) {
-          doc.save(function(err) {
-            if (err) { return rej(err); }
-            res();
-          });
-        });
-      });
-      return Promise.all(promises);
+      return testutil.save_documents(_.concat(regions, mobility));
     });
   });
 
-  after(function disconnectDatabase(done) {
+  after(function disconnect_database(done) {
     mongoose.disconnect(done);
   });
 
@@ -111,15 +103,15 @@ describe('get_region_populations', function() {
 
   it('should return empty object for unknown country', function() {
     return util.get_region_populations('unknown country code')
-      .then(function(mapping) {
-        assert(_.isEqual(mapping, {}));
+      .then(function(result) {
+        assert(_.isEqual(result, {}));
       });
   });
 
   it('should return empty object for dates we have no data for', function() {
     return util.get_region_populations('br', new Date('1980-01-01'))
-      .then(function(mapping) {
-        assert(_.isEqual(mapping, {}));
+      .then(function(result) {
+        assert(_.isEqual(result, {}));
       });
   });
 });

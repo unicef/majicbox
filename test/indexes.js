@@ -12,7 +12,7 @@ var Thing = mongoose.model('Thing', thingSchema);
 
 describe('Mongoose indexes persist in mongodb', function() {
   beforeEach(function() {
-    return testutil.connectAndClearTestDb();
+    return testutil.connect_and_clear_test_db();
   });
 
   afterEach(function(done) {
