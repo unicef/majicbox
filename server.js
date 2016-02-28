@@ -35,7 +35,7 @@ function handle_region_populations(req, res, next) {
                                      req.params.time2)
     .then(res.json.bind(res))
     .catch(function(err) {
-      console.error('error handling /region_populations/:', err);
+      console.error('error while handling /region_populations/:', err);
       return next(err);
     });
 }
@@ -49,6 +49,16 @@ router.route('/region_populations/:country_code/:time1')
   .get(apicache('1 day'), handle_region_populations);
 router.route('/region_populations/:country_code/:time1/:time2')
   .get(apicache('1 day'), handle_region_populations);
+
+router.route('/regions/:country_code')
+  .get(apicache('1 day'), function(req, res, next) {
+    util.get_regions(req.params.country_code)
+      .then(res.json.bind(res))
+      .catch(function(err) {
+        console.error('error while handling /regions/:', err);
+        return next(err);
+      });
+  });
 
 // All of our routes will be prefixed with '/api'.
 app.use('/api', router);

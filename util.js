@@ -3,6 +3,8 @@ var _ = require('lodash');
 var Mobility = require('./app/models/mobility');
 var Region = require('./app/models/region');
 
+// TODO(jetpack): Should these functions throw errors when there's no data?
+
 /** Returns relative population estimates for the country.
  * @param{string} country_code - Country.
  * @param{string} time1 - Date. See comment for time2.
@@ -50,6 +52,22 @@ function get_region_populations(country_code, time1, time2) {
     });
 }
 
+/** Return all regions for the country.
+ * @param{string} country_code - Country.
+ * @return{Promise} Array of Region objects with properties `region_code`,
+ *   `name`, `geo_area_sqkm`, and `geo_feature`.
+*/
+function get_regions(country_code) {
+  return Region.find({country_code: country_code})
+    .select('region_code name geo_area_sqkm geo_feature')
+    .then(function(regions) {
+      return regions.map(function(region) {
+        return _.pick(
+          region, ['region_code', 'name', 'geo_area_sqkm', 'geo_feature']);
+      });
+    });
+}
+
 /** Simple timing tool. `stopwatch.reset` resets the timer. Subsequent calls to
  * `stopwatch.click` will output a console message with the time since the last
  * `click` or `reset`.
@@ -78,6 +96,7 @@ var stopwatch = (function() {
 })();
 
 module.exports = {
+  get_regions: get_regions,
   get_region_populations: get_region_populations,
   stopwatch: stopwatch
 };
