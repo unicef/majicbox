@@ -15,8 +15,8 @@ var Thing = mongoose.model('Thing', thingSchema);
 // this is helpful when you would like to change behavior when testing
 process.env.NODE_ENV = 'test';
 
-beforeEach(function(done) {
-  testutil.connectAndClearTestDb(done);
+beforeEach(function() {
+  return testutil.connectAndClearTestDb();
 });
 
 afterEach(function(done) {
