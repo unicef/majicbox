@@ -1,4 +1,4 @@
-var util = require('./testutils');
+var util = require('./testutil');
 var config = require('../config');
 var assert = require('assert');
 var mongoose = require('mongoose');

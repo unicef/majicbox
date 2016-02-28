@@ -28,8 +28,11 @@ var weather_schema = new mongoose.Schema({
   }
 });
 
-// TODO(jetpack): you're gonna want some indices on this thing. probably a
-// compound index on {date, country_code} and maybe {date, country_code, and
-// origin_region_code}.
+// See note in Mobility schema on indexing subtleties, and links to
+// documentation.
+
+// -1 for `date` to get most recent data first.
+weather_schema.index({country_code: 1, region_code: 1, date: -1});
+weather_schema.index({country_code: 1, region_code: 1, kind: 1, date: -1});
 
 module.exports = mongoose.model('Weather', weather_schema);

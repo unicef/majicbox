@@ -13,6 +13,8 @@ installed to use it. Check out the Mongodb installation information at:
 - `git clone git@github.com:mikefab/majicbox.git`
 - `cd majicbox`
 - `npm install`
+- `cp -r data-sample data`
+- `node lib/import/region.js -f=admin2 -c=br`
 - `NODE_ENV=development nodemon server.js 8000`
 - browse to http://localhost:8000/api
 

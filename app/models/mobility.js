@@ -35,8 +35,18 @@ var mobility_schema = new mongoose.Schema({
   destinations: [{code: String, count: Number}]
 });
 
-// TODO(jetpack): you're gonna want some indices on this thing. probably a
-// compound index on {date, country_code} and maybe {date, country_code, and
-// origin_region_code}. not sure about kind?
+// NOTE: Deciding which fields to index on and in what order is subtle, and
+// depends on query patterns. One rule of thumb is to add fields that are
+// queried by range to the end of the index[1]. Consult the Mongo docs on
+// indexing[2], and use explain()[3] to investigate query efficiency.
+//
+// [1] http://blog.mongolab.com/2012/06/cardinal-ins/
+// [2] https://docs.mongodb.org/manual/indexes/
+// [3] https://docs.mongodb.org/manual/reference/explain-results/
+
+// -1 for `date` to get most recent data first.
+mobility_schema.index({country_code: 1, origin_region_code: 1, date: -1});
+mobility_schema.index({country_code: 1, origin_region_code: 1, kind: 1,
+                       date: -1});
 
 module.exports = mongoose.model('Mobility', mobility_schema);
