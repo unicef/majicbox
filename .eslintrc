@@ -10,7 +10,9 @@
     // else's after returns are _good_ style!
     "no-else-return": 0,
     // Allow single lines.
-    "brace-style": [2, "1tbs", { "allowSingleLine": true }]
+    "brace-style": [2, "1tbs", { "allowSingleLine": true }],
+    // Weird, I thought this was the default?
+    "quotes": [2, "single"]
   },
   "env": {
     // Don't warn for Mocha globals.
