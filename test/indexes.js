@@ -57,7 +57,7 @@ describe('Mongoose indexes persist in mongodb', function() {
         );
 
         assert(
-          should_have_elem.length > 0, 'Index should exist for age'
+          should_have_elem.length === 1, 'Index should exist for age'
         );
 
         assert(
