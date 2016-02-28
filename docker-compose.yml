@@ -1,0 +1,17 @@
+mongo:
+    image: mongo:latest
+    ports:
+        - "27017"
+
+majicbox:
+    build: .
+    links:
+        - "mongo"
+
+unit-tests:
+    build: .
+    command: ./node_modules/mocha/bin/mocha test
+    environment:
+        - "TEST_DB=mongodb://mongo/test"
+    links:
+        - "mongo"
