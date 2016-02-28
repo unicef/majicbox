@@ -40,9 +40,7 @@ describe('Mongoose indexes persist in mongodb', function() {
 
     thing.save(function() {
       thing.collection.getIndexes(function(err, results) {
-        if (err) {
-          done();
-        }
+        if (err) { return done(err); }
 
         var should_have_elem = Object.keys(results).filter(
           function(e) {
