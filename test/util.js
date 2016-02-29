@@ -197,7 +197,7 @@ describe('get_region_populations', function() {
   });
 
   it('should return empty object for dates we have no data for', function() {
-    return util.get_region_populations('br', new Date('1980-01-01'))
+    return util.get_region_populations(country_code, new Date('1980-01-01'))
       .then(function(result) {
         assert(_.isEqual(result, {}));
       });
