@@ -1,9 +1,9 @@
 var assert = require('assert');
 var mongoose = require('mongoose');
-var Region = require('../app/models/region');
-var util = require('./clear_db_util');
 var config = require('../config');
 var importer = require('../lib/import/region');
+var Region = require('../app/models/region');
+var util = require('./clear_db_util');
 
 describe('Import admins', function() {
   var admin_geojson = require('./data/admin2.json');
