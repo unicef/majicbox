@@ -5,17 +5,20 @@ var Region = require('./app/models/region');
 
 // TODO(jetpack): Should these functions throw errors when there's no data?
 
+// TODO(jetpack): Change the date range params. Figure out how to do unions
+// (null, 1 date, and pair of dates).
+
 /** Returns relative population estimates for the country.
  * @param{string} country_code - Country.
- * @param{string} time1 - Date. See comment for time2.
- * @param{string} time2 - Date. If neither time1 nor time2 are given, returns
- *   data for most recent date available. If only time1 given, returns data for
- *   that time. If both given, returns all data between the 2 dates. It's
- *   invalid for only time2 to be specified.
+ * @param{string} start_time - Date. See comment for end_time.
+ * @param{string} end_time - Date. If neither start_time nor end_time are given,
+ *   returns the most recent data available. If only start_time given, returns
+ *   data for that time. If both given, returns all data between the 2 times
+ *   (inclusive). It's invalid for only end_time to be specified.
  * @return{Promise} Nested mapping from date to region code to population value.
  *   Dates are represented in ISO string format.
  */
-function get_region_populations(country_code, time1, time2) {
+function get_region_populations(country_code, start_time, end_time) {
   return Region.find({country_code: country_code})
     .select('region_code')
     .then(function(regions) {
@@ -28,11 +31,11 @@ function get_region_populations(country_code, time1, time2) {
                             origin_region_code: region.region_code,
                             destination_region_code: region.region_code};
           var query;
-          if (time1 && time2) {
-            conditions.date = {$gte: time1, $lte: time2};
+          if (start_time && end_time) {
+            conditions.date = {$gte: start_time, $lte: end_time};
             query = Mobility.find(conditions);
-          } else if (time1) {
-            conditions.date = time1;
+          } else if (start_time) {
+            conditions.date = start_time;
             query = Mobility.find(conditions);
           } else {
             // else, get the latest mobility data due to sorting.

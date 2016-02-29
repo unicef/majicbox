@@ -8,19 +8,22 @@ var util = require('../util');
 
 var testutil = require('./testutil');
 
+// Helper function for building Mobility documents.
+// eslint-disable-next-line require-jsdoc
+function new_mobility(country_code, date, origin, destination, count) {
+  return new Mobility({
+    date: date, country_code: country_code,
+    origin_region_code: origin, destination_region_code: destination,
+    count: count});
+}
+
 describe('get_region_populations', function() {
   var country_code = 'br';
   var date1 = new Date('2016-02-28');
   var date2 = new Date('2016-02-29');
 
   // Helper function for building Mobility documents.
-  // eslint-disable-next-line require-jsdoc
-  function movement(date, origin, destination, count) {
-    return new Mobility({
-      date: date, country_code: country_code,
-      origin_region_code: origin, destination_region_code: destination,
-      count: count});
-  }
+  var movement = _.partial(new_mobility, country_code);
 
   before(function initialize_database() {
     return testutil.connect_and_clear_test_db().then(function() {

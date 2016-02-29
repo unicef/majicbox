@@ -24,6 +24,8 @@ app.use(bodyParser.json());
 /* eslint new-cap: [2, {"capIsNewExceptions": ["express.Router"]}] */
 var router = express.Router(); // get an instance of the express Router
 
+// TODO(jetpack): Reduce `.catch(...)` duplication/boilerplate.
+
 /** Wrapper for get_region_populations.
  * @param{object} req - Express request object.
  * @param{object} res - Express ressponse object.
@@ -31,8 +33,8 @@ var router = express.Router(); // get an instance of the express Router
  * @return{Promise} Fulfilled when done.
  */
 function handle_region_populations(req, res, next) {
-  return util.get_region_populations(req.params.country_code, req.params.time1,
-                                     req.params.time2)
+  return util.get_region_populations(req.params.country_code,
+                                     req.params.start_time, req.params.end_time)
     .then(res.json.bind(res))
     .catch(function(err) {
       console.error('error while handling /region_populations/:', err);
@@ -40,14 +42,19 @@ function handle_region_populations(req, res, next) {
     });
 }
 
+// TODO(jetpack): Rename endpoint to just `populations`?
+//
+// TODO(jetpack): This can be a single route w/ optional params:
+// http://expressjs.com/en/api.html
+//
 // TODO(jetpack): It's redundant to have a cache for each of these (especially
 // the time-based endpoints). We should instead wrap util.get_region_populations
 // directly.
 router.route('/region_populations/:country_code')
   .get(apicache('1 day'), handle_region_populations);
-router.route('/region_populations/:country_code/:time1')
+router.route('/region_populations/:country_code/:start_time')
   .get(apicache('1 day'), handle_region_populations);
-router.route('/region_populations/:country_code/:time1/:time2')
+router.route('/region_populations/:country_code/:start_time/:end_time')
   .get(apicache('1 day'), handle_region_populations);
 
 router.route('/regions/:country_code')
