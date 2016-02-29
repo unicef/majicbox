@@ -1,7 +1,6 @@
-var util = require('./clear_db_util');
-var config = require('../config');
 var assert = require('assert');
 var mongoose = require('mongoose');
+var testutil = require('./testutil');
 var thingSchema = new mongoose.Schema(
   {
     age: {type: Number, index: true},
@@ -16,25 +15,13 @@ var Thing = mongoose.model('Thing', thingSchema);
 process.env.NODE_ENV = 'test';
 
 describe('Mongoose indexes persist in mongodb', function() {
-  var debug = false;
-  var test_db = config.testdb;
 
-  // Clear any existing data in test DB and load test data.
-  before(function(done) {
-    if (debug) {
-      console.log('Connecting to test mongo', test_db);
-    }
-    mongoose.connect(test_db, function(err) {
-      if (err) {
-        throw err;
-      }
-      if (debug) {
-        console.log('Clearing existing data in', test_db);
-      }
-      util.clearDB();
+  before(function initializeDatabase(done) {
+    return testutil.connectAndClearTestDb().then(function() {
       done();
     });
   });
+
   after(function() {
     mongoose.disconnect();
   });
