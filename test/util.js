@@ -124,52 +124,68 @@ describe('get_region_populations', function() {
     mongoose.disconnect(done);
   });
 
-  // Helper function to check data for date1.
-  // eslint-disable-next-line require-jsdoc
-  function check_date1(result, check_only_result) {
-    var date_key = date1.toISOString();
+  /** Helper function to check that the result has the expected data for the
+   * given date.
+   * @param{Date} date - Date to check.
+   * @param{Object} expected_data - Data we expect in the result.
+   * @param{Object} result - Result returned from get_region_populations.
+   * @param{Boolean} allow_multiple_dates_in_result - Whether to allow data for
+   *   other dates in the result.
+   */
+  function check_date_data(date, expected_data, result,
+                           allow_multiple_dates_in_result) {
+    var date_key = date.toISOString();
     assert(result[date_key]);
-    assert(_.isEqual({br1: 100, br2: 200}, result[date_key]));
-    if (check_only_result) {
+    assert(_.isEqual(expected_data, result[date_key]));
+    if (!allow_multiple_dates_in_result) {
       assert.strictEqual(1, _.size(result));
     }
   }
 
-  // Helper function to check data for date2.
-  // eslint-disable-next-line require-jsdoc
-  function check_date2(result, check_only_result) {
-    var date_key = date2.toISOString();
-    assert(result[date_key]);
-    assert(_.isEqual({br1: 1000, br2: 2000, br3: 3000}, result[date_key]));
-    if (check_only_result) {
-      assert.strictEqual(1, _.size(result));
-    }
-  }
+  var check_date1 = _.partial(check_date_data, date1, {br1: 100, br2: 200});
+  var check_date2 = _.partial(check_date_data, date2,
+                              {br1: 1000, br2: 2000, br3: 3000});
 
   it('should return data for single dates', function() {
     return Promise.all([
       util.get_region_populations(country_code, date1).then(function(result) {
-        check_date1(result, true);
+        check_date1(result);
       }),
       util.get_region_populations(country_code, date2).then(function(result) {
-        check_date2(result, true);
+        check_date2(result);
       })
     ]);
   });
 
   it('should return data for all dates in range', function() {
-    return util.get_region_populations(country_code, date1, date2)
-      .then(function(result) {
-        assert.strictEqual(2, _.size(result));
-        check_date1(result);
-        check_date2(result);
-      });
+    return Promise.all([
+      // Return data for all dates, inclusive.
+      util.get_region_populations(country_code, date1, date2)
+        .then(function(result) {
+          assert.strictEqual(2, _.size(result));
+          check_date1(result, true);
+          check_date2(result, true);
+        }),
+      // Return data for all dates when given range is larger.
+      util.get_region_populations(country_code, new Date('1999-01-01'),
+                                  new Date('3000-12-31'))
+        .then(function(result) {
+          assert.strictEqual(2, _.size(result));
+          check_date1(result, true);
+          check_date2(result, true);
+        }),
+      // Return data for just date1 when range excludes date2.
+      util.get_region_populations(country_code, new Date('1999-01-01'), date1)
+        .then(function(result) {
+          check_date1(result);
+        })
+    ]);
   });
 
   it('should return latest data when no date specified', function() {
     return util.get_region_populations(country_code)
       .then(function(result) {
-        check_date2(result, true);
+        check_date2(result);
       });
   });
 
