@@ -57,7 +57,9 @@ function get_region_populations(country_code, start_time, end_time) {
             query = Mobility.find(conditions);
           } else {
             // else, get the latest mobility data due to sorting.
-            query = Mobility.find(conditions).limit(1);
+            // TODO(jetpack): Test with explain() to see if we need an explicit
+            // sort, and to check that this is fast.
+            query = Mobility.find(conditions).sort('-date').limit(1);
           }
           query.exec(function(err, mobilities) {
             if (err) { return reject(err); }
@@ -71,6 +73,56 @@ function get_region_populations(country_code, start_time, end_time) {
       });
       return Promise.all(region_promises).then(function() { return result; });
     });
+}
+
+/**
+ * Returns egress mobility data for a region. This indicates movement out of a
+ * region and into other regions.
+ *
+ * @param{string} country_code - Country.
+ * @param{string} origin_region_code - Origin region.
+ * @param{Date} start_time - Date. See comment for get_region_populations.
+ * @param{Date} end_time - Date. See comment for get_region_populations.
+ * @return{Promise} A mapping from date to destination region code to count
+ *   value. Dates are in ISO string format. Counts represent movement from the
+ *   origin region to each destination region. The origin and destination
+ *   regions can be the same, indicating staying in the same region. Example:
+ *   {'2016-02-28T00:00:00.000Z': {'br1': 123, 'br2': 256},
+ *    '2016-02-29T00:00:00.000Z': {'br1': 128, 'br2': 512}}
+ */
+function get_egress_mobility(country_code, origin_region_code, start_time,
+                             end_time) {
+  var conditions = {country_code: country_code,
+                    origin_region_code: origin_region_code};
+  var query;
+  if (start_time && end_time) {
+    conditions.date = {$gte: start_time, $lte: end_time};
+    query = Mobility.find(conditions);
+  } else if (start_time) {
+    conditions.date = start_time;
+    query = Mobility.find(conditions);
+  } else {
+    // else, get the latest mobility data due to sorting.
+    // TODO(jetpack): Is there a better way to get just data for the latest
+    // date? Can't just use limit(1) like in get_region_populations, since there
+    // are multiple records for each region we need.
+    query = Mobility.findOne(conditions).sort('-date').then(function(result) {
+      if (!result) {
+        return [];
+      }
+      conditions.date = result.date;
+      return Mobility.find(conditions);
+    });
+  }
+  return query.then(function(docs) {
+    var result = {};
+    docs.forEach(function(mobility) {
+      _.set(result,
+            [mobility.date.toISOString(), mobility.destination_region_code],
+            mobility.count);
+    });
+    return result;
+  });
 }
 
 /** Simple timing tool. `stopwatch.reset` resets the timer. Subsequent calls to
@@ -101,6 +153,7 @@ var stopwatch = (function() {
 })();
 
 module.exports = {
+  get_egress_mobility: get_egress_mobility,
   get_regions: get_regions,
   get_region_populations: get_region_populations,
   stopwatch: stopwatch

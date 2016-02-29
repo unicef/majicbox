@@ -52,6 +52,14 @@ router.route('/region_populations/:country_code/:start_time')
 router.route('/region_populations/:country_code/:start_time/:end_time')
   .get(apicache('1 day'), handle_region_populations);
 
+router.route('/mobility/:country_code/:region_code/:start_time?/:end_time?')
+  .get(apicache('1 day'), function(req, res, next) {
+    util.get_egress_mobility(req.params.country_code, req.params.region_code,
+                             req.params.start_time, req.params.end_time)
+      .then(res.json.bind(res))
+      .catch(next);
+  });
+
 router.route('/regions/:country_code')
   .get(apicache('1 day'), function(req, res, next) {
     util.get_regions(req.params.country_code)

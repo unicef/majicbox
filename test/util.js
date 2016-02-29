@@ -203,3 +203,118 @@ describe('get_region_populations', function() {
       });
   });
 });
+
+describe('get_egress_mobility', function() {
+  var country_code = 'mx';
+  var date1 = new Date('2016-03-14');
+  var date2 = new Date('2016-03-15');
+
+  // Helper function for building Mobility documents.
+  var movement = _.partial(new_mobility, country_code);
+
+  before(function initialize_database() {
+    return testutil.connect_and_clear_test_db().then(function() {
+      var regions = [
+        new Region({country_code: country_code, region_code: 'mx1'}),
+        new Region({country_code: country_code, region_code: 'mx3'}),
+        new Region({country_code: country_code, region_code: 'mx2'})
+      ];
+      var mobility = [
+        // date1:
+        movement(date1, 'mx1', 'mx1', 11),
+        movement(date1, 'mx1', 'mx2', 12),
+        movement(date1, 'mx2', 'mx1', 21),
+        movement(date1, 'mx3', 'mx3', 33),
+        // date2:
+        movement(date2, 'mx1', 'mx2', 120),
+        movement(date2, 'mx2', 'mx1', 210),
+        movement(date2, 'mx2', 'mx2', 220)
+      ];
+      return testutil.save_documents(_.concat(regions, mobility));
+    });
+  });
+
+  after(function disconnect_database(done) {
+    mongoose.disconnect(done);
+  });
+
+  it('should return data for single dates', function() {
+    return Promise.all([
+      util.get_egress_mobility(country_code, 'mx1', date1)
+        .then(function(result) {
+          assert.strictEqual(1, _.size(result));
+          assert(_.isEqual({mx1: 11, mx2: 12}, result[date1.toISOString()]));
+        }),
+      util.get_egress_mobility(country_code, 'mx2', date2)
+        .then(function(result) {
+          assert.strictEqual(1, _.size(result));
+          assert(_.isEqual({mx1: 210, mx2: 220}, result[date2.toISOString()]));
+        })
+    ]);
+  });
+
+  it('should return data for all dates in range', function() {
+    return Promise.all([
+      // Return data for all dates, inclusive.
+      util.get_egress_mobility(country_code, 'mx1', date1, date2)
+        .then(function(result) {
+          assert.strictEqual(2, _.size(result));
+          assert(_.isEqual({mx1: 11, mx2: 12}, result[date1.toISOString()]));
+          assert(_.isEqual({mx2: 120}, result[date2.toISOString()]));
+        }),
+      // Return data for all dates when given range is larger.
+      util.get_egress_mobility(country_code, 'mx2', new Date('1999-01-01'),
+                               new Date('3000-12-31'))
+        .then(function(result) {
+          assert.strictEqual(2, _.size(result));
+          assert(_.isEqual({mx1: 21}, result[date1.toISOString()]));
+          assert(_.isEqual({mx1: 210, mx2: 220}, result[date2.toISOString()]));
+        }),
+      // Return data for just date1 when range excludes date2.
+      util.get_egress_mobility(country_code, 'mx1', new Date('1999-01-01'),
+                                  date1)
+        .then(function(result) {
+          assert.strictEqual(1, _.size(result));
+          assert(_.isEqual({mx1: 11, mx2: 12}, result[date1.toISOString()]));
+        })
+    ]);
+  });
+
+  it('should return latest data when no date specified', function() {
+    var date_key = date2.toISOString();
+    return Promise.all([
+      util.get_egress_mobility(country_code, 'mx1').then(function(result) {
+        assert.strictEqual(1, _.size(result));
+        assert(_.isEqual({mx2: 120}, result[date_key]));
+      }),
+      util.get_egress_mobility(country_code, 'mx2').then(function(result) {
+        assert.strictEqual(1, _.size(result));
+        assert(_.isEqual({mx1: 210, mx2: 220}, result[date_key]));
+      })
+    ]);
+  });
+
+  it('should return empty object for unknown country or region', function() {
+    return Promise.all([
+      util.get_egress_mobility('unknown country', 'unknown region')
+        .then(function(result) {
+          assert(_.isEqual(result, {}));
+        }),
+      util.get_egress_mobility('unknown country', 'mx1')
+        .then(function(result) {
+          assert(_.isEqual(result, {}));
+        }),
+      util.get_egress_mobility(country_code, 'unknown region')
+        .then(function(result) {
+          assert(_.isEqual(result, {}));
+        })
+    ]);
+  });
+
+  it('should return empty object for dates we have no data for', function() {
+    return util.get_egress_mobility(country_code, 'mx1', new Date('1980-01-01'))
+      .then(function(result) {
+        assert(_.isEqual(result, {}));
+      });
+  });
+});
