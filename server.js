@@ -24,8 +24,6 @@ app.use(bodyParser.json());
 /* eslint new-cap: [2, {"capIsNewExceptions": ["express.Router"]}] */
 var router = express.Router(); // get an instance of the express Router
 
-// TODO(jetpack): Reduce `.catch(...)` duplication/boilerplate.
-
 /** Wrapper for get_region_populations.
  * @param{object} req - Express request object.
  * @param{object} res - Express ressponse object.
@@ -36,10 +34,7 @@ function handle_region_populations(req, res, next) {
   return util.get_region_populations(req.params.country_code,
                                      req.params.start_time, req.params.end_time)
     .then(res.json.bind(res))
-    .catch(function(err) {
-      console.error('error while handling /region_populations/:', err);
-      return next(err);
-    });
+    .catch(next);
 }
 
 // TODO(jetpack): Rename endpoint to just `populations`?
@@ -61,10 +56,7 @@ router.route('/regions/:country_code')
   .get(apicache('1 day'), function(req, res, next) {
     util.get_regions(req.params.country_code)
       .then(res.json.bind(res))
-      .catch(function(err) {
-        console.error('error while handling /regions/:', err);
-        return next(err);
-      });
+      .catch(next);
   });
 
 // All of our routes will be prefixed with '/api'.
