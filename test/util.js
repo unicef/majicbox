@@ -8,6 +8,76 @@ var util = require('../util');
 
 var testutil = require('./testutil');
 
+describe('get_regions', function() {
+  var country_code = 'br';
+  var geo_features = [
+    {type: 'Feature',
+     properties: {name: 'Staten Island'},
+     geometry: {type: 'MultiPolygon',
+                coordinates: [[[[-74.0531, 40.57770], [-74.05406, 40.57711]]]]}
+    },
+    {type: 'Feature',
+     properties: {name: 'Queens'},
+     geometry: {type: 'MultiPolygon',
+                coordinates: [[[[-75.0531, 41.57770], [-75.05406, 41.57711]]]]}
+    },
+    {type: 'Feature',
+     properties: {name: 'Bronx'},
+     geometry: {type: 'MultiPolygon',
+                coordinates: [[[[-76.0531, 42.57770], [-76.05406, 42.57711]]]]}
+    }
+  ];
+
+  // Helper function for building Region documents.
+  // eslint-disable-next-line require-jsdoc
+  function region(region_code, name, geo_area_sqkm, geo_feature) {
+    return new Region({
+      country_code: country_code, region_code: region_code, name: name,
+      geo_area_sqkm: geo_area_sqkm, geo_feature: geo_feature});
+  }
+
+  before(function initialize_database() {
+    return testutil.connect_and_clear_test_db().then(function() {
+      var regions = [region('d1', 'District 1', 100, geo_features[0]),
+                     region('d2', 'District 2', 200, geo_features[1]),
+                     region('d3', 'District 3', 300, geo_features[2])];
+      return testutil.save_documents(regions);
+    });
+  });
+
+  after(function disconnect_database(done) {
+    mongoose.disconnect(done);
+  });
+
+  it('should return all regions for country', function() {
+    return util.get_regions(country_code)
+      .then(function(result) {
+        assert.strictEqual(3, result.length);
+        _.range(3).forEach(function(i) {
+          var i_1 = i + 1;
+          assert.strictEqual('d' + i_1, result[i].region_code);
+          assert.strictEqual('District ' + i_1, result[i].name);
+          assert.strictEqual(i_1 * 100, result[i].geo_area_sqkm);
+          // TODO(jetpack): _.isEqual fails when testing the whole geo_feature
+          // for some reason.
+          assert(_.isEqual(geo_features[i].properties,
+                           result[i].geo_feature.properties));
+          assert(_.isEqual(geo_features[i].geometry.type,
+                           result[i].geo_feature.geometry.type));
+          assert(_.isEqual(geo_features[i].geometry.coordinates,
+                           result[i].geo_feature.geometry.coordinates));
+        });
+      });
+  });
+
+  it('should return empty object for unknown country', function() {
+    return util.get_regions('unknown country code')
+      .then(function(result) {
+        assert(_.isEqual(result, []));
+      });
+  });
+});
+
 // Helper function for building Mobility documents.
 // eslint-disable-next-line require-jsdoc
 function new_mobility(country_code, date, origin, destination, count) {
@@ -115,76 +185,6 @@ describe('get_region_populations', function() {
     return util.get_region_populations('br', new Date('1980-01-01'))
       .then(function(result) {
         assert(_.isEqual(result, {}));
-      });
-  });
-});
-
-describe('get_regions', function() {
-  var country_code = 'br';
-  var geo_features = [
-    {type: 'Feature',
-     properties: {name: 'Staten Island'},
-     geometry: {type: 'MultiPolygon',
-                coordinates: [[[[-74.0531, 40.57770], [-74.05406, 40.57711]]]]}
-    },
-    {type: 'Feature',
-     properties: {name: 'Queens'},
-     geometry: {type: 'MultiPolygon',
-                coordinates: [[[[-75.0531, 41.57770], [-75.05406, 41.57711]]]]}
-    },
-    {type: 'Feature',
-     properties: {name: 'Bronx'},
-     geometry: {type: 'MultiPolygon',
-                coordinates: [[[[-76.0531, 42.57770], [-76.05406, 42.57711]]]]}
-    }
-  ];
-
-  // Helper function for building Region documents.
-  // eslint-disable-next-line require-jsdoc
-  function region(region_code, name, geo_area_sqkm, geo_feature) {
-    return new Region({
-      country_code: country_code, region_code: region_code, name: name,
-      geo_area_sqkm: geo_area_sqkm, geo_feature: geo_feature});
-  }
-
-  before(function initialize_database() {
-    return testutil.connect_and_clear_test_db().then(function() {
-      var regions = [region('d1', 'District 1', 100, geo_features[0]),
-                     region('d2', 'District 2', 200, geo_features[1]),
-                     region('d3', 'District 3', 300, geo_features[2])];
-      return testutil.save_documents(regions);
-    });
-  });
-
-  after(function disconnect_database(done) {
-    mongoose.disconnect(done);
-  });
-
-  it('should return all regions for country', function() {
-    return util.get_regions(country_code)
-      .then(function(result) {
-        assert.strictEqual(3, result.length);
-        _.range(3).forEach(function(i) {
-          var i_1 = i + 1;
-          assert.strictEqual('d' + i_1, result[i].region_code);
-          assert.strictEqual('District ' + i_1, result[i].name);
-          assert.strictEqual(i_1 * 100, result[i].geo_area_sqkm);
-          // TODO(jetpack): _.isEqual fails when testing the whole geo_feature
-          // for some reason.
-          assert(_.isEqual(geo_features[i].properties,
-                           result[i].geo_feature.properties));
-          assert(_.isEqual(geo_features[i].geometry.type,
-                           result[i].geo_feature.geometry.type));
-          assert(_.isEqual(geo_features[i].geometry.coordinates,
-                           result[i].geo_feature.geometry.coordinates));
-        });
-      });
-  });
-
-  it('should return empty object for unknown country', function() {
-    return util.get_regions('unknown country code')
-      .then(function(result) {
-        assert(_.isEqual(result, []));
       });
   });
 });

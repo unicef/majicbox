@@ -5,6 +5,22 @@ var Region = require('./app/models/region');
 
 // TODO(jetpack): Should these functions throw errors when there's no data?
 
+/** Return all regions for the country.
+ * @param{string} country_code - Country.
+ * @return{Promise} Array of Region objects with properties `region_code`,
+ *   `name`, `geo_area_sqkm`, and `geo_feature`.
+*/
+function get_regions(country_code) {
+  return Region.find({country_code: country_code})
+    .select('region_code name geo_area_sqkm geo_feature')
+    .then(function(regions) {
+      return regions.map(function(region) {
+        return _.pick(
+          region, ['region_code', 'name', 'geo_area_sqkm', 'geo_feature']);
+      });
+    });
+}
+
 // TODO(jetpack): Change the date range params. Figure out how to do unions
 // (null, 1 date, and pair of dates).
 
@@ -52,22 +68,6 @@ function get_region_populations(country_code, start_time, end_time) {
         });
       });
       return Promise.all(region_promises).then(function() { return result; });
-    });
-}
-
-/** Return all regions for the country.
- * @param{string} country_code - Country.
- * @return{Promise} Array of Region objects with properties `region_code`,
- *   `name`, `geo_area_sqkm`, and `geo_feature`.
-*/
-function get_regions(country_code) {
-  return Region.find({country_code: country_code})
-    .select('region_code name geo_area_sqkm geo_feature')
-    .then(function(regions) {
-      return regions.map(function(region) {
-        return _.pick(
-          region, ['region_code', 'name', 'geo_area_sqkm', 'geo_feature']);
-      });
     });
 }
 
