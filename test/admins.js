@@ -5,13 +5,16 @@ var Region = require('../app/models/region');
 var testutil = require('./testutil');
 
 describe('Import admins', function() {
-  var admin_geojson = require('./data/admin2.json');
   var country_code = 'br';
-  var path = './test/data/admin2.json';
+  var admin_geojson = require('./data/geojson/' +
+  country_code + '/admin2.json');
+
+  var file = 'admin2';
+  var path = './test/data/geojson/';
 
   before(function initializeDatabase(done) {
     return testutil.connectAndClearTestDb().then(function() {
-      importer.import_regions(country_code, path)
+      importer.import_regions(country_code, file, path)
       .then(done);
     });
   });
