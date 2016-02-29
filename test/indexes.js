@@ -1,4 +1,4 @@
-var util = require('./clearDb');
+var util = require('./clear_db_util');
 var config = require('../config');
 var assert = require('assert');
 var mongoose = require('mongoose');

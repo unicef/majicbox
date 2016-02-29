@@ -1,7 +1,7 @@
 var assert = require('assert');
 var mongoose = require('mongoose');
 var Region = require('../app/models/region');
-var util = require('./clearDb');
+var util = require('./clear_db_util');
 var config = require('../config');
 var importer = require('../lib/import/region');
 
