@@ -1,11 +1,5 @@
 var mongoose = require('mongoose');
 
-// TODO(jetpack): Per-country, per-day, this schema stores 1 document per
-// region. This is probably fine, though alternatively, we could store 1
-// document per (origin, destination) pair. This shouldn't be too expensive as
-// the mobility matrix should be quite sparse, and maybe simplifies some
-// application logic(?).
-
 var mobility_schema = new mongoose.Schema({
   // Which date this data is for.
   //
@@ -29,10 +23,17 @@ var mobility_schema = new mongoose.Schema({
   //   they only need to be unique within a country).
   country_code: String,
 
-  // Movement origin. Should match a Region document's region_code.
+  // Movement origin and destination. Both values should match a Region
+  // document's region_code.
   origin_region_code: String,
-  // Movement destinations. Array of (destination region code, count) pairs.
-  destinations: [{code: String, count: Number}]
+  destination_region_code: String,
+  // Amount of movement from origin to destination.
+  count: Number,
+
+  // TODO(jetpack): Need anything else here?
+  meta: {
+    source: String
+  }
 });
 
 // NOTE: Deciding which fields to index on and in what order is subtle, and
@@ -46,7 +47,7 @@ var mobility_schema = new mongoose.Schema({
 
 // -1 for `date` to get most recent data first.
 mobility_schema.index({country_code: 1, origin_region_code: 1, date: -1});
-mobility_schema.index({country_code: 1, origin_region_code: 1, kind: 1,
-                       date: -1});
+mobility_schema.index({country_code: 1, origin_region_code: 1,
+                       destination_region_code: 1, date: -1});
 
 module.exports = mongoose.model('Mobility', mobility_schema);

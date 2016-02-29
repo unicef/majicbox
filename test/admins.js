@@ -1,7 +1,7 @@
 var assert = require('assert');
 var mongoose = require('mongoose');
 var Region = require('../app/models/region');
-var util = require('./testutil');
+var util = require('./clearDb');
 var config = require('../config');
 var importer = require('../lib/import/region');
 
@@ -12,7 +12,7 @@ describe('Import admins', function() {
   var debug = false;
   var country_code = 'br';
 
-  var test_db = config.db_test;
+  var test_db = config.testdb;
 
   // Clear any existing data in test DB and load test data.
   before(function(done) {

@@ -1,4 +1,4 @@
-var util = require('./testutil');
+var util = require('./clearDb');
 var config = require('../config');
 var assert = require('assert');
 var mongoose = require('mongoose');
@@ -17,7 +17,7 @@ process.env.NODE_ENV = 'test';
 
 describe('Mongoose indexes persist in mongodb', function() {
   var debug = false;
-  var test_db = config.db_test;
+  var test_db = config.testdb;
 
   // Clear any existing data in test DB and load test data.
   before(function(done) {
