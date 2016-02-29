@@ -124,53 +124,52 @@ describe('get_region_populations', function() {
     mongoose.disconnect(done);
   });
 
-  it('should return value for each self-migration', function() {
+  // Helper function to check data for date1.
+  // eslint-disable-next-line require-jsdoc
+  function check_date1(result, check_only_result) {
+    var date_key = date1.toISOString();
+    assert(result[date_key]);
+    assert(_.isEqual({br1: 100, br2: 200}, result[date_key]));
+    if (check_only_result) {
+      assert.strictEqual(1, _.size(result));
+    }
+  }
+
+  // Helper function to check data for date2.
+  // eslint-disable-next-line require-jsdoc
+  function check_date2(result, check_only_result) {
+    var date_key = date2.toISOString();
+    assert(result[date_key]);
+    assert(_.isEqual({br1: 1000, br2: 2000, br3: 3000}, result[date_key]));
+    if (check_only_result) {
+      assert.strictEqual(1, _.size(result));
+    }
+  }
+
+  it('should return data for single dates', function() {
     return Promise.all([
-      // date 1
       util.get_region_populations(country_code, date1).then(function(result) {
-        var date_key = date1.toISOString();
-        assert(result[date_key]);
-        assert.strictEqual(2, _.size(result[date_key]));
-        assert.strictEqual(100, result[date_key].br1);
-        assert.strictEqual(200, result[date_key].br2);
+        check_date1(result, true);
       }),
-      // date 2
-      util.get_region_populations(country_code, date2)
-        .then(function(result) {
-          var date_key = date2.toISOString();
-          assert(result[date_key]);
-          assert.strictEqual(3, _.size(result[date_key]));
-          assert.strictEqual(1000, result[date_key].br1);
-          assert.strictEqual(2000, result[date_key].br2);
-          assert.strictEqual(3000, result[date_key].br3);
-        })
+      util.get_region_populations(country_code, date2).then(function(result) {
+        check_date2(result, true);
+      })
     ]);
   });
 
   it('should return data for all dates in range', function() {
     return util.get_region_populations(country_code, date1, date2)
       .then(function(result) {
-        var date1_key = date1.toISOString();
-        var date2_key = date2.toISOString();
-        assert(result[date1_key]);
-        assert.strictEqual(2, _.size(result[date1_key]));
-        assert.strictEqual(100, result[date1_key].br1);
-        assert.strictEqual(200, result[date1_key].br2);
-        assert(result[date2_key]);
-        assert.strictEqual(3, _.size(result[date2_key]));
-        assert.strictEqual(1000, result[date2_key].br1);
-        assert.strictEqual(2000, result[date2_key].br2);
-        assert.strictEqual(3000, result[date2_key].br3);
+        assert.strictEqual(2, _.size(result));
+        check_date1(result);
+        check_date2(result);
       });
   });
 
   it('should return latest data when no date specified', function() {
     return util.get_region_populations(country_code)
       .then(function(result) {
-        var date2_key = date2.toISOString();
-        assert.strictEqual(1, _.size(result));
-        assert(result[date2_key]);
-        assert.strictEqual(3, _.size(result[date2_key]));
+        check_date2(result, true);
       });
   });
 
