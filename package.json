@@ -9,6 +9,7 @@
   "dependencies": {
     "apicache": "0.0.12",
     "body-parser": "^1.15.0",
+    "chai": "^3.5.0",
     "compression": "^1.6.1",
     "express": "^4.13.4",
     "geojson-area": "^0.2.1",
