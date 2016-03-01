@@ -53,19 +53,20 @@ describe('get_regions', function() {
     return util.get_regions(country_code)
       .then(function(result) {
         assert.strictEqual(3, result.length);
-        _.range(3).forEach(function(i) {
-          var i_1 = i + 1;
-          assert.strictEqual('d' + i_1, result[i].region_code);
-          assert.strictEqual('District ' + i_1, result[i].name);
-          assert.strictEqual(i_1 * 100, result[i].geo_area_sqkm);
+        _.range(3).forEach(function(i_zero) {
+          var i = i_zero + 1;
+          var region_i = _.find(result, {region_code: 'd' + i});
+          assert(region_i);
+          assert.strictEqual('District ' + i, region_i.name);
+          assert.strictEqual(i * 100, region_i.geo_area_sqkm);
           // TODO(jetpack): _.isEqual fails when testing the whole geo_feature
           // for some reason.
-          assert(_.isEqual(geo_features[i].properties,
-                           result[i].geo_feature.properties));
-          assert(_.isEqual(geo_features[i].geometry.type,
-                           result[i].geo_feature.geometry.type));
-          assert(_.isEqual(geo_features[i].geometry.coordinates,
-                           result[i].geo_feature.geometry.coordinates));
+          assert(_.isEqual(geo_features[i_zero].properties,
+                           region_i.geo_feature.properties));
+          assert(_.isEqual(geo_features[i_zero].geometry.type,
+                           region_i.geo_feature.geometry.type));
+          assert(_.isEqual(geo_features[i_zero].geometry.coordinates,
+                           region_i.geo_feature.geometry.coordinates));
         });
       });
   });
