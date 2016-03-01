@@ -17,8 +17,8 @@ describe('Mongoose indexes persist in mongodb', function() {
     return testutil.connect_and_clear_test_db();
   });
 
-  after(function() {
-    mongoose.disconnect();
+  after(function(done) {
+    mongoose.disconnect(done);
   });
 
   describe('Create first thing and verify mongo index created', function() {
