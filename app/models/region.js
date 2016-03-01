@@ -6,13 +6,9 @@ var GeoJSON = require('mongoose-geojson-schema');
 
 var region_schema = new mongoose.Schema({
   // ISO 3166-1 alpha-2 two letter country code.
-  country_code: {type: String, index: true},
-  // Unique identifier for this region within the country (e.g. the 2nd part of
-  // ISO 3166-2).
-  region_code: String,
-  // Human-readable name, like "São Bernardo do Campo".
-  name: {
+  country_code: {
     type: String,
+    index: true,
     validate: {
       validator: function(v) {
         return /[a-z]{2}/.test(v);
@@ -20,6 +16,11 @@ var region_schema = new mongoose.Schema({
       message: '{VALUE} is not a valid name!'
     }
   },
+  // Unique identifier for this region within the country (e.g. the 2nd part of
+  // ISO 3166-2).
+  region_code: String,
+  // Human-readable name, like "São Bernardo do Campo".
+  name: String,
   // Area of the region in square kilometers.
   geo_area_sqkm: Number,
   // Polygon of the region.
