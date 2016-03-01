@@ -5,7 +5,9 @@ var Region = require('./app/models/region');
 
 // TODO(jetpack): Should these functions throw errors when there's no data?
 
-/** Return all regions for the country.
+/**
+ * Return all regions for the country.
+ *
  * @param{string} country_code - Country.
  * @return{Promise} Array of Region objects with properties `region_code`,
  *   `name`, `geo_area_sqkm`, and `geo_feature`.
@@ -139,7 +141,8 @@ function get_mobility_populations(country_code, start_time, end_time) {
     }));
 }
 
-/** Simple timing tool. `stopwatch.reset` resets the timer. Subsequent calls to
+/**
+ * Simple timing tool. `stopwatch.reset` resets the timer. Subsequent calls to
  * `stopwatch.click` will output a console message with the time since the last
  * `click` or `reset`.
  */
@@ -147,15 +150,19 @@ function get_mobility_populations(country_code, start_time, end_time) {
 // stopwatches running. or, return stopwatch objects.
 var stopwatch = (function() {
   var global_stopwatch_last_time = 0;
-  /** Reset stopwatch to time new sequence.
+
+  /**
+   * Reset stopwatch to time new sequence.
    * @param{object} msg - Gets logged.
    */
   function reset(msg) {
     global_stopwatch_last_time = Date.now();
     if (msg) { console.log('\n' + msg, global_stopwatch_last_time); }
   }
+
   // TODO(jetpack): change to log `arguments`, like console.log.
-  /** Log time since last click (or reset).
+  /**
+   * Log time since last click (or reset).
    * @param{object} msg - Gets logged along with the time.
    */
   function click(msg) {
@@ -163,6 +170,7 @@ var stopwatch = (function() {
     console.log(msg, now - global_stopwatch_last_time);
     global_stopwatch_last_time = now;
   }
+
   return {reset: reset, click: click};
 })();
 

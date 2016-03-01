@@ -2,7 +2,9 @@ var mongoose = require('mongoose');
 
 var config = require('../config');
 
-/** Drops all data from connected MongoDB.
+/**
+ * Drops all data from connected MongoDB.
+ *
  * @return{Promise} Fulfilled when all collections are dropped.
  */
 function clear_db() {
@@ -20,7 +22,9 @@ function clear_db() {
   return Promise.all(all_done).then(function() {});
 }
 
-/** Connect to test database and clear existing data.
+/**
+ * Connect to test database and clear existing data.
+ *
  * @return{Promise} Fulfilled when connection is established and data is
  *   cleared.
  */
@@ -40,7 +44,9 @@ function connect_and_clear_test_db() {
   });
 }
 
-/** Save all documents.
+/**
+ * Save all documents.
+ *
  * @param{Array} docs - Documents to save.
  * @return{Promise} Fulfilled when documents saved.
  */

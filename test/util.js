@@ -124,8 +124,10 @@ describe('get_mobility_populations', function() {
     mongoose.disconnect(done);
   });
 
-  /** Helper function to check that the result has the expected data for the
+  /**
+   * Helper function to check that the result has the expected data for the
    * given date.
+   *
    * @param{Date} date - Date to check.
    * @param{Object} expected_data - Data we expect in the result.
    * @param{Object} result - Result returned from get_mobility_populations.
