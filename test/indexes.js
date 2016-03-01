@@ -1,6 +1,8 @@
 var assert = require('assert');
 var mongoose = require('mongoose');
+
 var testutil = require('./testutil');
+
 var thingSchema = new mongoose.Schema(
   {
     age: {type: Number, index: true},
