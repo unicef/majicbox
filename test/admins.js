@@ -29,11 +29,11 @@ describe('Import admins', function() {
       admin_geojson.features.forEach(function(feature) {
         var promise = new Promise(function(resolve) {
           Region.findOne(
-            {region_code: feature.properties.NAME_2},
+            {region_code: feature.properties.ID_2},
             function(err, admin) {
               if (err) {throw err;}
               assert.strictEqual(
-                feature.properties.NAME_2,
+                String(feature.properties.ID_2),
                 admin.region_code
               );
               resolve();
