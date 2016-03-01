@@ -78,6 +78,10 @@ describe('get_country_weather', function() {
   var country_code = 'br';
   var date1 = new Date('1999-12-31');
   var date2 = new Date('2000-01-01');
+  var date3 = new Date('2000-01-02');
+  var date1_key = date1.toISOString();
+  var date2_key = date2.toISOString();
+  var date3_key = date3.toISOString();
 
   // Helper function for building Weather documents.
   // eslint-disable-next-line require-jsdoc
@@ -90,11 +94,13 @@ describe('get_country_weather', function() {
     });
   }
 
+  // Data is missing for 'br1' for date3 and missing for 'br2' for date1.
   before(function initialize_database() {
     return testutil.connect_and_clear_test_db().then(function() {
       return testutil.save_documents([
-        weather(date1, 'br1', 11), weather(date1, 'br2', 12),
-        weather(date2, 'br1', 21), weather(date2, 'br2', 22)
+        weather(date1, 'br1', 11),
+        weather(date2, 'br1', 21), weather(date2, 'br2', 22),
+        weather(date3, 'br2', 32)
       ]);
     });
   });
@@ -108,14 +114,18 @@ describe('get_country_weather', function() {
       util.get_country_weather(country_code, date1)
         .then(function(result) {
           assert.strictEqual(1, _.size(result));
-          testutil.assert_equal({br1: {temp_mean: 11}, br2: {temp_mean: 12}},
-                                result[date1.toISOString()]);
+          testutil.assert_equal({br1: {temp_mean: 11}}, result[date1_key]);
         }),
       util.get_country_weather(country_code, date2)
         .then(function(result) {
           assert.strictEqual(1, _.size(result));
           testutil.assert_equal({br1: {temp_mean: 21}, br2: {temp_mean: 22}},
-                                result[date2.toISOString()]);
+                                result[date2_key]);
+        }),
+      util.get_country_weather(country_code, date3)
+        .then(function(result) {
+          assert.strictEqual(1, _.size(result));
+          testutil.assert_equal({br2: {temp_mean: 32}}, result[date3_key]);
         })
     ]);
   });
@@ -124,8 +134,7 @@ describe('get_country_weather', function() {
     return util.get_country_weather(country_code)
       .then(function(result) {
         assert.strictEqual(1, _.size(result));
-        testutil.assert_equal({br1: {temp_mean: 21}, br2: {temp_mean: 22}},
-                              result[date2.toISOString()]);
+        testutil.assert_equal({br2: {temp_mean: 32}}, result[date3_key]);
       });
   });
 
