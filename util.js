@@ -6,6 +6,14 @@ var Weather = require('./app/models/weather');
 
 // TODO(jetpack): Should these functions throw errors when there's no data?
 
+// A number of functions here take `start_time` and `end_time` parameters. The
+// semantics for each of these are the same (unless otherwise noted):
+// * If neither start_time nor end_time are given, the function returns the most
+//   recent data available.
+// * If only start_time given, returns data for that time.
+// * If both given, returns all data between the 2 times (inclusive).
+// * It's invalid for only end_time to be specified.
+
 /**
  * Return all regions for the country.
  *
@@ -66,8 +74,8 @@ function get_country_weather(country_code, date) {
  *
  * @param{Model} model - Mongoose model collection.
  * @param{object} conditions - Conditions to filter for.
- * @param{Date} start_time - See `get_region_population` JSDoc.
- * @param{Date} end_time - See `get_region_population` JSDoc.
+ * @param{Date} start_time - See comment near the top of this module.
+ * @param{Date} end_time - See comment near the top of this module.
  * @return{Promise} Fulfilled with a value suitable for use as a condition
  *   filter on the `date` field *or* null if documents were found.
  */
@@ -96,8 +104,8 @@ function get_date_condition(model, conditions, start_time, end_time) {
  *
  * @param{string} country_code - Country.
  * @param{string} origin_region_code - Origin region.
- * @param{Date} start_time - Date. See comment for get_region_populations.
- * @param{Date} end_time - Date. See comment for get_region_populations.
+ * @param{Date} start_time - See comment near the top of this module.
+ * @param{Date} end_time - See comment near the top of this module.
  * @return{Promise} A mapping from date to destination region code to count
  *   value. Dates are in ISO string format. Counts represent movement from the
  *   origin region to each destination region. The origin and destination
@@ -130,11 +138,8 @@ function get_egress_mobility(country_code, origin_region_code, start_time,
  * Returns relative population estimates for the country based on mobility data.
  *
  * @param{string} country_code - Country.
- * @param{Date} start_time - Date. See comment for end_time.
- * @param{Date} end_time - Date. If neither start_time nor end_time are given,
- *   returns the most recent data available. If only start_time given, returns
- *   data for that time. If both given, returns all data between the 2 times
- *   (inclusive). It's invalid for only end_time to be specified.
+ * @param{Date} start_time - See comment near the top of this module.
+ * @param{Date} end_time - See comment near the top of this module.
  * @return{Promise} Nested mapping from date to region code to population value.
  *   Dates are in ISO string format. Example:
  *   {'2016-02-28T00:00:00.000Z': {'br1': 32123, 'br2': 75328},
