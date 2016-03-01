@@ -17,8 +17,10 @@ function get_regions(country_code) {
     .select('region_code name geo_area_sqkm geo_feature')
     .then(function(regions) {
       return regions.map(function(region) {
-        return _.pick(
-          region, ['region_code', 'name', 'geo_area_sqkm', 'geo_feature']);
+        var result = _.pick(region, ['region_code', 'name', 'geo_area_sqkm']);
+        // Strip off extra Mongoose document stuff from geo_feature subdocument.
+        result.geo_feature = region.geo_feature.toObject();
+        return result;
       });
     });
 }
@@ -48,6 +50,7 @@ function get_date_condition(model, conditions, start_time, end_time) {
   } else {
     return new Promise(function(res, rej) {
       model.findOne(conditions)
+        .select('date')
         .sort('-date')
         .exec(function(err, doc) {
           if (err) { return rej(err); }

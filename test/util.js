@@ -59,14 +59,8 @@ describe('get_regions', function() {
           assert(region_i);
           assert.strictEqual('District ' + i, region_i.name);
           assert.strictEqual(i * 100, region_i.geo_area_sqkm);
-          // TODO(jetpack): _.isEqual fails when testing the whole geo_feature
-          // for some reason.
-          assert(_.isEqual(geo_features[i_zero].properties,
-                           region_i.geo_feature.properties));
-          assert(_.isEqual(geo_features[i_zero].geometry.type,
-                           region_i.geo_feature.geometry.type));
-          assert(_.isEqual(geo_features[i_zero].geometry.coordinates,
-                           region_i.geo_feature.geometry.coordinates));
+          assert(_.isEqual(geo_features[i_zero],
+                           region_i.geo_feature));
         });
       });
   });
