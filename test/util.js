@@ -279,6 +279,8 @@ describe('get_egress_mobility', function() {
   var country_code = 'mx';
   var date1 = new Date('2016-03-14');
   var date2 = new Date('2016-03-15');
+  var date1_key = date1.toISOString();
+  var date2_key = date2.toISOString();
 
   // Helper function for building Mobility documents.
   var movement = _.partial(new_mobility, country_code);
@@ -314,14 +316,12 @@ describe('get_egress_mobility', function() {
       util.get_egress_mobility(country_code, 'mx1', date1)
         .then(function(result) {
           assert.strictEqual(1, _.size(result));
-          testutil.assert_equal({mx1: 11, mx2: 12},
-                                result[date1.toISOString()]);
+          testutil.assert_equal({mx1: 11, mx2: 12}, result[date1_key]);
         }),
       util.get_egress_mobility(country_code, 'mx2', date2)
         .then(function(result) {
           assert.strictEqual(1, _.size(result));
-          testutil.assert_equal({mx1: 210, mx2: 220},
-                                result[date2.toISOString()]);
+          testutil.assert_equal({mx1: 210, mx2: 220}, result[date2_key]);
         })
     ]);
   });
@@ -332,40 +332,36 @@ describe('get_egress_mobility', function() {
       util.get_egress_mobility(country_code, 'mx1', date1, date2)
         .then(function(result) {
           assert.strictEqual(2, _.size(result));
-          testutil.assert_equal({mx1: 11, mx2: 12},
-                                result[date1.toISOString()]);
-          testutil.assert_equal({mx2: 120}, result[date2.toISOString()]);
+          testutil.assert_equal({mx1: 11, mx2: 12}, result[date1_key]);
+          testutil.assert_equal({mx2: 120}, result[date2_key]);
         }),
       // Return data for all dates when given range is larger.
       util.get_egress_mobility(country_code, 'mx2', new Date('1999-01-01'),
                                new Date('3000-12-31'))
         .then(function(result) {
           assert.strictEqual(2, _.size(result));
-          testutil.assert_equal({mx1: 21}, result[date1.toISOString()]);
-          testutil.assert_equal({mx1: 210, mx2: 220},
-                                result[date2.toISOString()]);
+          testutil.assert_equal({mx1: 21}, result[date1_key]);
+          testutil.assert_equal({mx1: 210, mx2: 220}, result[date2_key]);
         }),
       // Return data for just date1 when range excludes date2.
       util.get_egress_mobility(country_code, 'mx1', new Date('1999-01-01'),
                                   date1)
         .then(function(result) {
           assert.strictEqual(1, _.size(result));
-          testutil.assert_equal({mx1: 11, mx2: 12},
-                                result[date1.toISOString()]);
+          testutil.assert_equal({mx1: 11, mx2: 12}, result[date1_key]);
         })
     ]);
   });
 
   it('should return latest data when no date specified', function() {
-    var date_key = date2.toISOString();
     return Promise.all([
       util.get_egress_mobility(country_code, 'mx1').then(function(result) {
         assert.strictEqual(1, _.size(result));
-        testutil.assert_equal({mx2: 120}, result[date_key]);
+        testutil.assert_equal({mx2: 120}, result[date2_key]);
       }),
       util.get_egress_mobility(country_code, 'mx2').then(function(result) {
         assert.strictEqual(1, _.size(result));
-        testutil.assert_equal({mx1: 210, mx2: 220}, result[date_key]);
+        testutil.assert_equal({mx1: 210, mx2: 220}, result[date2_key]);
       })
     ]);
   });
