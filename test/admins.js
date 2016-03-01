@@ -12,11 +12,11 @@ describe('Import admins', function() {
   var file = 'admin2';
   var path = './test/data/geojson/';
 
-  before(function initializeDatabase(done) {
-    return testutil.connect_and_clear_test_db().then(function() {
-      importer.import_regions(country_code, file, path)
-      .then(done);
-    });
+  before(function initializeDatabase() {
+    return testutil.connect_and_clear_test_db()
+      .then(function() {
+        return importer.import_regions(country_code, file, path)
+      });
   });
 
   after(function(done) {
