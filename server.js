@@ -31,25 +31,25 @@ router.route('/regions/:country_code')
       .catch(next);
   });
 
+// TODO(jetpack): It's inefficient to have a cache here for the time-based
+// routes, as we'll be saving the same data multiple times (e.g. queries for the
+// ranges [2016-01-01, 2016-12-31] and [2016-01-01, 2017-01-01] will return
+// nearly identical data, but be stored separately. We should instead use a
+// cache directly in the underlying functions.
+
 router.route('/mobility/:country_code/:region_code/:start_time?/:end_time?')
   .get(apicache('1 day'), function(req, res, next) {
-    util.get_egress_mobility(req.params.country_code, req.params.region_code,
-                             req.params.start_time, req.params.end_time)
+    var p = req.params;
+    util.get_egress_mobility(p.country_code, p.region_code, p.start_time,
+                             p.end_time)
       .then(res.json.bind(res))
       .catch(next);
   });
 
-// TODO(jetpack): It's inefficient to have a cache here for the time-based
-// /mobility_populations/ and /mobility/ routes, as we'll be saving the same
-// data multiple times (e.g. queries for the ranges [2016-01-01, 2016-12-31] and
-// [2016-01-01, 2017-01-01] will return nearly identical data, but be stored
-// separately. We should instead use a cache directly in the underlying
-// functions.
-
 router.route('/mobility_populations/:country_code/:start_time?/:end_time?')
   .get(apicache('1 day'), function(req, res, next) {
-    util.get_mobility_populations(req.params.country_code,
-                                  req.params.start_time, req.params.end_time)
+    var p = req.params;
+    util.get_mobility_populations(p.country_code, p.start_time, p.end_time)
       .then(res.json.bind(res))
       .catch(next);
   });

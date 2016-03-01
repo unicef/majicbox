@@ -80,17 +80,15 @@ function get_egress_mobility(country_code, origin_region_code, start_time,
   return get_date_condition(Mobility, conditions, start_time, end_time)
     .then(function(date_condition) {
       if (!date_condition) { return {}; }
+      conditions.date = date_condition;
       return new Promise(function(res, rej) {
-        conditions.date = date_condition;
         Mobility.find(conditions).exec(function(err, docs) {
           if (err) { return rej(err); }
-          var result = {};
-          docs.forEach(function(mobility) {
-            _.set(result, [mobility.date.toISOString(),
-                           mobility.destination_region_code],
-                  mobility.count);
-          });
-          res(result);
+          res(docs.reduce(function(result, mobility) {
+            return _.set(result, [mobility.date.toISOString(),
+                                  mobility.destination_region_code],
+                         mobility.count);
+          }, {}));
         });
       });
     });
@@ -175,8 +173,8 @@ var stopwatch = (function() {
 })();
 
 module.exports = {
+  get_regions: get_regions,
   get_egress_mobility: get_egress_mobility,
   get_mobility_populations: get_mobility_populations,
-  get_regions: get_regions,
   stopwatch: stopwatch
 };
