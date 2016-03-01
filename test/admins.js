@@ -1,4 +1,4 @@
-var assert = require('assert');
+var assert = require('chai').assert;
 var mongoose = require('mongoose');
 
 var importer = require('../lib/import/region');
@@ -33,16 +33,23 @@ describe('Import admins', function() {
             {region_code: feature.properties.ID_2},
             function(err, admin) {
               if (err) {throw err;}
+
               assert.strictEqual(
                 String(feature.properties.ID_2),
                 admin.region_code
               );
+
+              assert.match(admin.country_code, /[a-z]{2}/, 'regexp matches');
+              assert(admin.region_code, 'region_code has not been set!');
+              assert(admin.name, 'Name has not been set!');
+              assert(admin.geo_area_sqkm, 'geo_area_sqkm has not been set!');
+              assert(admin.geo_feature, 'geo_feature has not been set!');
+
               resolve();
             });
         });
         all_done.push(promise);
       });
-      console.log('ALL DONE!');
       Promise.all(all_done).then(function() {
         done();
       });
