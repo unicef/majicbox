@@ -11,7 +11,15 @@ var region_schema = new mongoose.Schema({
   // ISO 3166-2).
   region_code: String,
   // Human-readable name, like "São Bernardo do Campo".
-  name: String,
+  name: {
+    type: String,
+    validate: {
+      validator: function(v) {
+        return /[a-z]{2}/.test(v);
+      },
+      message: '{VALUE} is not a valid name!'
+    }
+  },
   // Area of the region in square kilometers.
   geo_area_sqkm: Number,
   // Polygon of the region.
