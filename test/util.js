@@ -4,6 +4,7 @@ var mongoose = require('mongoose');
 
 var Mobility = require('../app/models/mobility');
 var Region = require('../app/models/region');
+var Weather = require('../app/models/weather');
 var util = require('../util');
 
 var testutil = require('./testutil');
@@ -69,6 +70,76 @@ describe('get_regions', function() {
     return util.get_regions('unknown country code')
       .then(function(result) {
         assert(_.isEqual(result, []));
+      });
+  });
+});
+
+describe('get_country_weather', function() {
+  var country_code = 'br';
+  var date1 = new Date('1999-12-31');
+  var date2 = new Date('2000-01-01');
+
+  // Helper function for building Region documents.
+  // eslint-disable-next-line require-jsdoc
+  function weather(date, region_code, temp_mean) {
+    return new Weather({
+      date: date,
+      country_code: country_code,
+      region_code: region_code,
+      data: {temp_mean: temp_mean}
+    });
+  }
+
+  before(function initialize_database() {
+    return testutil.connect_and_clear_test_db().then(function() {
+      return testutil.save_documents([
+        weather(date1, 'br1', 11), weather(date1, 'br2', 12),
+        weather(date2, 'br1', 21), weather(date2, 'br2', 22)
+      ]);
+    });
+  });
+
+  after(function disconnect_database(done) {
+    mongoose.disconnect(done);
+  });
+
+  it('should return data for all regions for country', function() {
+    return Promise.all([
+      util.get_country_weather(country_code, date1)
+        .then(function(result) {
+          assert.strictEqual(1, _.size(result));
+          assert(_.isEqual({br1: {temp_mean: 11}, br2: {temp_mean: 12}},
+                           result[date1.toISOString()]));
+        }),
+      util.get_country_weather(country_code, date2)
+        .then(function(result) {
+          assert.strictEqual(1, _.size(result));
+          assert(_.isEqual({br1: {temp_mean: 21}, br2: {temp_mean: 22}},
+                           result[date2.toISOString()]));
+        })
+    ]);
+  });
+
+  it('should return latest data when no date specified', function() {
+    return util.get_country_weather(country_code)
+      .then(function(result) {
+        assert.strictEqual(1, _.size(result));
+        assert(_.isEqual({br1: {temp_mean: 21}, br2: {temp_mean: 22}},
+                         result[date2.toISOString()]));
+      });
+  });
+
+  it('should return empty object for unknown country', function() {
+    return util.get_country_weather('unknown country code')
+      .then(function(result) {
+        assert(_.isEqual(result, {}));
+      });
+  });
+
+  it('should return empty object for dates we have no data for', function() {
+    return util.get_country_weather(country_code, new Date('1980-01-01'))
+      .then(function(result) {
+        assert(_.isEqual(result, {}));
       });
   });
 });

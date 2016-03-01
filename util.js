@@ -2,6 +2,7 @@ var _ = require('lodash');
 
 var Mobility = require('./app/models/mobility');
 var Region = require('./app/models/region');
+var Weather = require('./app/models/weather');
 
 // TODO(jetpack): Should these functions throw errors when there's no data?
 
@@ -22,6 +23,34 @@ function get_regions(country_code) {
         result.geo_feature = region.geo_feature.toObject();
         return result;
       });
+    });
+}
+
+/**
+ * Return weather data for all regions for the country.
+ *
+ * @param{string} country_code - Country.
+ * @param{Date} date - Requested date. If none given, return latest available
+ *   data.
+ * @return{Promise} Map from date to region code to Weather data. Example:
+ *   {'2016-02-28T00:00:00.000Z': {'br1': {'temp_mean': 23},
+ *                                 'br2': {'temp_mean': 25}}}
+*/
+function get_country_weather(country_code, date) {
+  var conditions = {country_code: country_code};
+  return get_date_condition(Weather, conditions, date)
+    .then(function(latest_date) {
+      if (!latest_date) { return {}; }
+      conditions.date = latest_date;
+      return Weather.find(conditions)
+        .select('region_code data')
+        .then(function(docs) {
+          return docs.reduce(function(result, doc) {
+            return _.set(result,
+                         [latest_date.toISOString(), doc.region_code],
+                         doc.data.toObject());
+          }, {});
+        });
     });
 }
 
@@ -177,6 +206,7 @@ var stopwatch = (function() {
 
 module.exports = {
   get_regions: get_regions,
+  get_country_weather: get_country_weather,
   get_egress_mobility: get_egress_mobility,
   get_mobility_populations: get_mobility_populations,
   stopwatch: stopwatch

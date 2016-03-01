@@ -31,11 +31,31 @@ router.route('/regions/:country_code')
       .catch(next);
   });
 
+/**
+ * Convert date string into either a valid Date or null.
+ *
+ * @param{string} date_string - Input string.
+ * @return{Date} Returns date if input string is parseable as a Date. Otherwise,
+ *   returns null.
+ */
+function date_param(date_string) {
+  var unix_secs = Date.parse(date_string);
+  return unix_secs ? new Date(unix_secs) : null;
+}
+
 // TODO(jetpack): It's inefficient to have a cache here for the time-based
 // routes, as we'll be saving the same data multiple times (e.g. queries for the
 // ranges [2016-01-01, 2016-12-31] and [2016-01-01, 2017-01-01] will return
 // nearly identical data, but be stored separately. We should instead use a
 // cache directly in the underlying functions.
+
+router.route('/country_weather/:country_code/:time?')
+  .get(apicache('1 day'), function(req, res, next) {
+    var p = req.params;
+    util.get_country_weather(p.country_code, date_param(p.time))
+      .then(res.json.bind(res))
+      .catch(next);
+  });
 
 router.route('/mobility/:country_code/:region_code/:start_time?/:end_time?')
   .get(apicache('1 day'), function(req, res, next) {
