@@ -62,6 +62,35 @@ function get_country_weather(country_code, date) {
     });
 }
 
+/**
+ * Return weather data for given region.
+ *
+ * @param{string} country_code - Country.
+ * @param{string} region_code - Region.
+ * @param{Date} start_time - See comment near the top of this module.
+ * @param{Date} end_time - See comment near the top of this module.
+ * @return{Promise} Map from date to region code to Weather data. Example:
+ *   {'2016-02-28T00:00:00.000Z': {'br1': {'temp_mean': 23},
+ *                                 'br2': {'temp_mean': 25}}}
+*/
+function get_region_weather(country_code, region_code, start_time, end_time) {
+  var conditions = {country_code: country_code, region_code: region_code};
+  return get_date_condition(Weather, conditions, start_time, end_time)
+    .then(function(date_condition) {
+      if (!date_condition) { return {}; }
+      conditions.date = date_condition;
+      return Weather.find(conditions)
+        .select('date data')
+        .then(function(docs) {
+          return docs.reduce(function(result, doc) {
+            return _.set(result,
+                         [doc.date.toISOString(), region_code],
+                         doc.data.toObject());
+          }, {});
+        });
+    });
+}
+
 // TODO(jetpack): Change the date range params. Figure out how to do unions
 // (null, 1 date, and pair of dates).
 
@@ -212,6 +241,7 @@ var stopwatch = (function() {
 module.exports = {
   get_regions: get_regions,
   get_country_weather: get_country_weather,
+  get_region_weather: get_region_weather,
   get_egress_mobility: get_egress_mobility,
   get_mobility_populations: get_mobility_populations,
   stopwatch: stopwatch
