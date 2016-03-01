@@ -4,6 +4,21 @@ var Mobility = require('./app/models/mobility');
 var Region = require('./app/models/region');
 var Weather = require('./app/models/weather');
 
+/**
+ * Wrapper for _.setWith that is like _.set, except it works with number
+ * strings. _.set with a number string in the path will create an array.
+ * Example: _.set({}, ['br', '1'], 'value') -> {"br": [null,"value"]}
+ * Versus: my_set({}, ['br', '1'], 'value') -> {"br": {"1": "value"}}
+ *
+ * @param{Object} object - Object to modify.
+ * @param{Array|string} path - The path of property to set.
+ * @param{*} value - Value to set in object.
+ * @return{Object} Returns object.
+ */
+function my_set(object, path, value) {
+  return _.setWith(object, path, value, Object);
+}
+
 // TODO(jetpack): Should these functions throw errors when there's no data?
 
 // A number of functions here take `start_time` and `end_time` parameters. The
@@ -54,9 +69,9 @@ function get_country_weather(country_code, date) {
         .select('region_code data')
         .then(function(docs) {
           return docs.reduce(function(result, doc) {
-            return _.set(result,
-                         [latest_date.toISOString(), doc.region_code],
-                         doc.data.toObject());
+            return my_set(result,
+                          [latest_date.toISOString(), doc.region_code],
+                          doc.data.toObject());
           }, {});
         });
     });
@@ -83,9 +98,9 @@ function get_region_weather(country_code, region_code, start_time, end_time) {
         .select('date data')
         .then(function(docs) {
           return docs.reduce(function(result, doc) {
-            return _.set(result,
-                         [doc.date.toISOString(), region_code],
-                         doc.data.toObject());
+            return my_set(result,
+                          [doc.date.toISOString(), region_code],
+                          doc.data.toObject());
           }, {});
         });
     });
@@ -154,9 +169,9 @@ function get_egress_mobility(country_code, origin_region_code, start_time,
         Mobility.find(conditions).exec(function(err, docs) {
           if (err) { return rej(err); }
           res(docs.reduce(function(result, mobility) {
-            return _.set(result, [mobility.date.toISOString(),
-                                  mobility.destination_region_code],
-                         mobility.count);
+            return my_set(result, [mobility.date.toISOString(),
+                                   mobility.destination_region_code],
+                          mobility.count);
           }, {}));
         });
       });
@@ -194,8 +209,9 @@ function get_mobility_populations(country_code, start_time, end_time) {
             .exec(function(err, mobilities) {
               if (err) { return reject(err); }
               mobilities.forEach(function(mobility) {
-                _.set(result, [mobility.date.toISOString(), region.region_code],
-                      mobility.count);
+                my_set(result,
+                       [mobility.date.toISOString(), region.region_code],
+                       mobility.count);
               });
               resolve();
             });

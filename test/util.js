@@ -247,23 +247,23 @@ describe('get_mobility_populations', function() {
   before(function initialize_database() {
     return testutil.connect_and_clear_test_db().then(function() {
       var regions = [
-        new Region({country_code: country_code, region_code: 'br1'}),
-        new Region({country_code: country_code, region_code: 'br2'}),
-        new Region({country_code: country_code, region_code: 'br3'})
+        new Region({country_code: country_code, region_code: '1'}),
+        new Region({country_code: country_code, region_code: '2'}),
+        new Region({country_code: country_code, region_code: '3'})
       ];
       var mobility = [
         // date1:
-        movement(date1, 'br1', 'br1', 11),  // br1 self-migration
-        movement(date1, 'br1', 'br2', 12),
-        movement(date1, 'br1', 'br3', 13),
-        movement(date1, 'br2', 'br2', 22),  // br2 self-migration
-        movement(date1, 'br3', 'br3', 33),  // br3 self-migration
+        movement(date1, '1', '1', 11),  // 1 self-migration
+        movement(date1, '1', '2', 12),
+        movement(date1, '1', '3', 13),
+        movement(date1, '2', '2', 22),  // 2 self-migration
+        movement(date1, '3', '3', 33),  // 3 self-migration
         // date2:
-        movement(date2, 'br1', 'br1', 110),  // br1 self-migration
-        movement(date2, 'br1', 'br2', 120),
-        movement(date2, 'br1', 'br3', 130),
-        movement(date2, 'br2', 'br2', 220),  // br2 self-migration
-        movement(date2, 'br3', 'br2', 320)
+        movement(date2, '1', '1', 110),  // 1 self-migration
+        movement(date2, '1', '2', 120),
+        movement(date2, '1', '3', 130),
+        movement(date2, '2', '2', 220),  // 2 self-migration
+        movement(date2, '3', '2', 320)
       ];
       return testutil.save_documents(_.concat(regions, mobility));
     });
@@ -296,9 +296,11 @@ describe('get_mobility_populations', function() {
   }
 
   // Note that br3 only has population data for date1.
-  var check_date1 = _.partial(check_date_data, date1, {br1: 11, br2: 22,
-                                                       br3: 33});
-  var check_date2 = _.partial(check_date_data, date2, {br1: 110, br2: 220});
+  // eslint-disable-next-line quote-props
+  var check_date1 = _.partial(check_date_data, date1, {'1': 11, '2': 22,
+                                                       '3': 33});
+  // eslint-disable-next-line quote-props
+  var check_date2 = _.partial(check_date_data, date2, {'1': 110, '2': 220});
 
   it('should return data for single dates', function() {
     return Promise.all([
