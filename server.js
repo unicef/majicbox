@@ -60,8 +60,8 @@ router.route('/country_weather/:country_code/:time?')
 router.route('/mobility/:country_code/:region_code/:start_time?/:end_time?')
   .get(apicache('1 day'), function(req, res, next) {
     var p = req.params;
-    util.get_egress_mobility(p.country_code, p.region_code, p.start_time,
-                             p.end_time)
+    util.get_egress_mobility(p.country_code, p.region_code,
+                             date_param(p.start_time), date_param(p.end_time))
       .then(res.json.bind(res))
       .catch(next);
   });
@@ -69,7 +69,8 @@ router.route('/mobility/:country_code/:region_code/:start_time?/:end_time?')
 router.route('/mobility_populations/:country_code/:start_time?/:end_time?')
   .get(apicache('1 day'), function(req, res, next) {
     var p = req.params;
-    util.get_mobility_populations(p.country_code, p.start_time, p.end_time)
+    util.get_mobility_populations(p.country_code, date_param(p.start_time),
+                                  date_param(p.end_time))
       .then(res.json.bind(res))
       .catch(next);
   });
