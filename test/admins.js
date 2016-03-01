@@ -15,7 +15,7 @@ describe('Import admins', function() {
   before(function initializeDatabase() {
     return testutil.connect_and_clear_test_db()
       .then(function() {
-        return importer.import_regions(country_code, file, path)
+        return importer.import_regions(country_code, file, path);
       });
   });
 
