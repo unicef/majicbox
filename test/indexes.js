@@ -11,10 +11,8 @@ var thingSchema = new mongoose.Schema(
 var Thing = mongoose.model('Thing', thingSchema);
 
 describe('Mongoose indexes persist in mongodb', function() {
-  before(function initializeDatabase(done) {
-    return testutil.connectAndClearTestDb().then(function() {
-      done();
-    });
+  beforeEach(function() {
+    return testutil.connect_and_clear_test_db();
   });
 
   after(function() {

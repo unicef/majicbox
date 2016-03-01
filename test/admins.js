@@ -13,7 +13,7 @@ describe('Import admins', function() {
   var path = './test/data/geojson/';
 
   before(function initializeDatabase(done) {
-    return testutil.connectAndClearTestDb().then(function() {
+    return testutil.connect_and_clear_test_db().then(function() {
       importer.import_regions(country_code, file, path)
       .then(done);
     });
