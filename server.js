@@ -39,33 +39,20 @@ router.route('/mobility/:country_code/:region_code/:start_time?/:end_time?')
       .catch(next);
   });
 
-/** Wrapper for get_region_populations.
- * @param{object} req - Express request object.
- * @param{object} res - Express ressponse object.
- * @param{object} next - Express next callback.
- * @return{Promise} Fulfilled when done.
- */
-function handle_region_populations(req, res, next) {
-  return util.get_region_populations(req.params.country_code,
-                                     req.params.start_time, req.params.end_time)
-    .then(res.json.bind(res))
-    .catch(next);
-}
+// TODO(jetpack): It's inefficient to have a cache here for the time-based
+// /mobility_populations/ and /mobility/ routes, as we'll be saving the same
+// data multiple times (e.g. queries for the ranges [2016-01-01, 2016-12-31] and
+// [2016-01-01, 2017-01-01] will return nearly identical data, but be stored
+// separately. We should instead use a cache directly in the underlying
+// functions.
 
-// TODO(jetpack): Rename endpoint to just `populations`?
-//
-// TODO(jetpack): This can be a single route w/ optional params:
-// http://expressjs.com/en/api.html
-//
-// TODO(jetpack): It's redundant to have a cache for each of these (especially
-// the time-based endpoints). We should instead wrap util.get_region_populations
-// directly.
-router.route('/region_populations/:country_code')
-  .get(apicache('1 day'), handle_region_populations);
-router.route('/region_populations/:country_code/:start_time')
-  .get(apicache('1 day'), handle_region_populations);
-router.route('/region_populations/:country_code/:start_time/:end_time')
-  .get(apicache('1 day'), handle_region_populations);
+router.route('/mobility_populations/:country_code/:start_time?/:end_time?')
+  .get(apicache('1 day'), function(req, res, next) {
+    util.get_mobility_populations(req.params.country_code,
+                                  req.params.start_time, req.params.end_time)
+      .then(res.json.bind(res))
+      .catch(next);
+  });
 
 // All of our routes will be prefixed with '/api'.
 app.use('/api', router);

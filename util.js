@@ -94,7 +94,9 @@ function get_egress_mobility(country_code, origin_region_code, start_time,
     });
 }
 
-/** Returns relative population estimates for the country.
+/**
+ * Returns relative population estimates for the country based on mobility data.
+ *
  * @param{string} country_code - Country.
  * @param{Date} start_time - Date. See comment for end_time.
  * @param{Date} end_time - Date. If neither start_time nor end_time are given,
@@ -106,7 +108,7 @@ function get_egress_mobility(country_code, origin_region_code, start_time,
  *   {'2016-02-28T00:00:00.000Z': {'br1': 32123, 'br2': 75328},
  *    '2016-02-29T00:00:00.000Z': {'br1': 33843, 'br2': 70343}}
  */
-function get_region_populations(country_code, start_time, end_time) {
+function get_mobility_populations(country_code, start_time, end_time) {
   var conditions = {country_code: country_code};
   return Promise.all([get_date_condition(Mobility, conditions, start_time,
                                          end_time),
@@ -166,7 +168,7 @@ var stopwatch = (function() {
 
 module.exports = {
   get_egress_mobility: get_egress_mobility,
+  get_mobility_populations: get_mobility_populations,
   get_regions: get_regions,
-  get_region_populations: get_region_populations,
   stopwatch: stopwatch
 };

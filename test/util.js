@@ -87,7 +87,7 @@ function new_mobility(country_code, date, origin, destination, count) {
     count: count});
 }
 
-describe('get_region_populations', function() {
+describe('get_mobility_populations', function() {
   var country_code = 'br';
   var date1 = new Date('2016-02-28');
   var date2 = new Date('2016-02-29');
@@ -128,7 +128,7 @@ describe('get_region_populations', function() {
    * given date.
    * @param{Date} date - Date to check.
    * @param{Object} expected_data - Data we expect in the result.
-   * @param{Object} result - Result returned from get_region_populations.
+   * @param{Object} result - Result returned from get_mobility_populations.
    * @param{Boolean} allow_multiple_dates_in_result - Whether to allow data for
    *   other dates in the result.
    */
@@ -153,10 +153,10 @@ describe('get_region_populations', function() {
 
   it('should return data for single dates', function() {
     return Promise.all([
-      util.get_region_populations(country_code, date1).then(function(result) {
+      util.get_mobility_populations(country_code, date1).then(function(result) {
         check_date1(result);
       }),
-      util.get_region_populations(country_code, date2).then(function(result) {
+      util.get_mobility_populations(country_code, date2).then(function(result) {
         check_date2(result);
       })
     ]);
@@ -165,14 +165,14 @@ describe('get_region_populations', function() {
   it('should return data for all dates in range', function() {
     return Promise.all([
       // Return data for all dates, inclusive.
-      util.get_region_populations(country_code, date1, date2)
+      util.get_mobility_populations(country_code, date1, date2)
         .then(function(result) {
           assert.strictEqual(2, _.size(result));
           check_date1(result, true);
           check_date2(result, true);
         }),
       // Return data for all dates when given range is larger.
-      util.get_region_populations(country_code, new Date('1999-01-01'),
+      util.get_mobility_populations(country_code, new Date('1999-01-01'),
                                   new Date('3000-12-31'))
         .then(function(result) {
           assert.strictEqual(2, _.size(result));
@@ -180,7 +180,7 @@ describe('get_region_populations', function() {
           check_date2(result, true);
         }),
       // Return data for just date1 when range excludes date2.
-      util.get_region_populations(country_code, new Date('1999-01-01'), date1)
+      util.get_mobility_populations(country_code, new Date('1999-01-01'), date1)
         .then(function(result) {
           check_date1(result);
         })
@@ -188,21 +188,21 @@ describe('get_region_populations', function() {
   });
 
   it('should return latest data when no date specified', function() {
-    return util.get_region_populations(country_code)
+    return util.get_mobility_populations(country_code)
       .then(function(result) {
         check_date2(result);
       });
   });
 
   it('should return empty object for unknown country', function() {
-    return util.get_region_populations('unknown country code')
+    return util.get_mobility_populations('unknown country code')
       .then(function(result) {
         assert(_.isEqual(result, {}));
       });
   });
 
   it('should return empty object for dates we have no data for', function() {
-    return util.get_region_populations(country_code, new Date('1980-01-01'))
+    return util.get_mobility_populations(country_code, new Date('1980-01-01'))
       .then(function(result) {
         assert(_.isEqual(result, {}));
       });
