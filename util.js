@@ -24,6 +24,38 @@ function get_regions(country_code) {
 // TODO(jetpack): Change the date range params. Figure out how to do unions
 // (null, 1 date, and pair of dates).
 
+/**
+ * Helper function to return the date condition to use, based on input
+ * `start_time` and `end_time` parameters. If both are defined, the returned
+ * date condition is an inclusive range. If only `start_time` is defined, an
+ * exact date match is returned. If neither are defined, we search for the most
+ * recent `date` value stored in the model's collection.
+ *
+ * @param{Model} model - Mongoose model collection.
+ * @param{object} conditions - Conditions to filter for.
+ * @param{Date} start_time - See `get_region_population` JSDoc.
+ * @param{Date} end_time - See `get_region_population` JSDoc.
+ * @return{Promise} Fulfilled with a value suitable for use as a condition
+ *   filter on the `date` field *or* null if documents were found.
+ */
+function get_date_condition(model, conditions, start_time, end_time) {
+  if (start_time && end_time) {
+    return Promise.resolve({$gte: start_time, $lte: end_time});
+  } else if (start_time) {
+    return Promise.resolve(start_time);
+  } else {
+    return new Promise(function(res, rej) {
+      model.findOne(conditions)
+        .sort('-date')
+        .exec(function(err, doc) {
+          if (err) { return rej(err); }
+          if (!doc) { return res(null); }
+          res(doc.date);
+        });
+    });
+  }
+}
+
 /** Returns relative population estimates for the country.
  * @param{string} country_code - Country.
  * @param{Date} start_time - Date. See comment for end_time.
@@ -37,42 +69,34 @@ function get_regions(country_code) {
  *    '2016-02-29T00:00:00.000Z': {'br1': 33843, 'br2': 70343}}
  */
 function get_region_populations(country_code, start_time, end_time) {
-  return Region.find({country_code: country_code})
-    .select('region_code')
-    .then(function(regions) {
+  var conditions = {country_code: country_code};
+  return Promise.all([get_date_condition(Mobility, conditions, start_time,
+                                         end_time),
+                      Region.find(conditions).select('region_code')])
+    .then(_.spread(function(date_condition, regions) {
+      if (!date_condition) { return {}; }
+      conditions.date = date_condition;
       // For each region, find the self-migration Mobility data and add it to
       // `result`. When all `region_promises` are fulfilled, we're done.
       var result = {};
       var region_promises = regions.map(function(region) {
         return new Promise(function(resolve, reject) {
-          var conditions = {country_code: country_code,
-                            origin_region_code: region.region_code,
-                            destination_region_code: region.region_code};
-          var query;
-          if (start_time && end_time) {
-            conditions.date = {$gte: start_time, $lte: end_time};
-            query = Mobility.find(conditions);
-          } else if (start_time) {
-            conditions.date = start_time;
-            query = Mobility.find(conditions);
-          } else {
-            // else, get the latest mobility data due to sorting.
-            // TODO(jetpack): Test with explain() to see if we need an explicit
-            // sort, and to check that this is fast.
-            query = Mobility.find(conditions).sort('-date').limit(1);
-          }
-          query.exec(function(err, mobilities) {
-            if (err) { return reject(err); }
-            mobilities.forEach(function(mobility) {
-              _.set(result, [mobility.date.toISOString(), region.region_code],
-                    mobility.count);
+          var conditions_with_regions = _.assign(
+            {origin_region_code: region.region_code,
+             destination_region_code: region.region_code}, conditions);
+          Mobility.find(conditions_with_regions)
+            .exec(function(err, mobilities) {
+              if (err) { return reject(err); }
+              mobilities.forEach(function(mobility) {
+                _.set(result, [mobility.date.toISOString(), region.region_code],
+                      mobility.count);
+              });
+              resolve();
             });
-            resolve();
-          });
         });
       });
       return Promise.all(region_promises).then(function() { return result; });
-    });
+    }));
 }
 
 /**
@@ -94,35 +118,23 @@ function get_egress_mobility(country_code, origin_region_code, start_time,
                              end_time) {
   var conditions = {country_code: country_code,
                     origin_region_code: origin_region_code};
-  var query;
-  if (start_time && end_time) {
-    conditions.date = {$gte: start_time, $lte: end_time};
-    query = Mobility.find(conditions);
-  } else if (start_time) {
-    conditions.date = start_time;
-    query = Mobility.find(conditions);
-  } else {
-    // else, get the latest mobility data due to sorting.
-    // TODO(jetpack): Is there a better way to get just data for the latest
-    // date? Can't just use limit(1) like in get_region_populations, since there
-    // are multiple records for each region we need.
-    query = Mobility.findOne(conditions).sort('-date').then(function(result) {
-      if (!result) {
-        return [];
-      }
-      conditions.date = result.date;
-      return Mobility.find(conditions);
+  return get_date_condition(Mobility, conditions, start_time, end_time)
+    .then(function(date_condition) {
+      if (!date_condition) { return {}; }
+      return new Promise(function(res, rej) {
+        conditions.date = date_condition;
+        Mobility.find(conditions).exec(function(err, docs) {
+          if (err) { return rej(err); }
+          var result = {};
+          docs.forEach(function(mobility) {
+            _.set(result, [mobility.date.toISOString(),
+                           mobility.destination_region_code],
+                  mobility.count);
+          });
+          res(result);
+        });
+      });
     });
-  }
-  return query.then(function(docs) {
-    var result = {};
-    docs.forEach(function(mobility) {
-      _.set(result,
-            [mobility.date.toISOString(), mobility.destination_region_code],
-            mobility.count);
-    });
-    return result;
-  });
 }
 
 /** Simple timing tool. `stopwatch.reset` resets the timer. Subsequent calls to

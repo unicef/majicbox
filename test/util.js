@@ -104,17 +104,17 @@ describe('get_region_populations', function() {
       ];
       var mobility = [
         // date1:
-        movement(date1, 'br1', 'br1', 100),  // br1 self-migration
-        movement(date1, 'br1', 'br2', 22),
-        movement(date1, 'br1', 'br3', 33),
-        movement(date1, 'br2', 'br2', 200),  // br2 self-migration
-        movement(date1, 'br3', 'br2', 23),
+        movement(date1, 'br1', 'br1', 11),  // br1 self-migration
+        movement(date1, 'br1', 'br2', 12),
+        movement(date1, 'br1', 'br3', 13),
+        movement(date1, 'br2', 'br2', 22),  // br2 self-migration
+        movement(date1, 'br3', 'br3', 33),  // br3 self-migration
         // date2:
-        movement(date2, 'br1', 'br1', 1000),  // br1 self-migration
-        movement(date2, 'br1', 'br2', 220),
-        movement(date2, 'br1', 'br3', 330),
-        movement(date2, 'br2', 'br2', 2000),  // br2 self-migration
-        movement(date2, 'br3', 'br3', 3000)  // br3 self-migration
+        movement(date2, 'br1', 'br1', 110),  // br1 self-migration
+        movement(date2, 'br1', 'br2', 120),
+        movement(date2, 'br1', 'br3', 130),
+        movement(date2, 'br2', 'br2', 220),  // br2 self-migration
+        movement(date2, 'br3', 'br2', 320)
       ];
       return testutil.save_documents(_.concat(regions, mobility));
     });
@@ -135,16 +135,21 @@ describe('get_region_populations', function() {
   function check_date_data(date, expected_data, result,
                            allow_multiple_dates_in_result) {
     var date_key = date.toISOString();
-    assert(result[date_key]);
-    assert(_.isEqual(expected_data, result[date_key]));
+    assert(result[date_key], 'Expected data for date ' + date);
+    assert(_.isEqual(expected_data, result[date_key]),
+           JSON.stringify(expected_data) + ' != ' +
+           JSON.stringify(result[date_key]));
     if (!allow_multiple_dates_in_result) {
-      assert.strictEqual(1, _.size(result));
+      assert.strictEqual(
+        1, _.size(result), 'Expected only 1 result but got: ' +
+          JSON.stringify(result));
     }
   }
 
-  var check_date1 = _.partial(check_date_data, date1, {br1: 100, br2: 200});
-  var check_date2 = _.partial(check_date_data, date2,
-                              {br1: 1000, br2: 2000, br3: 3000});
+  // Note that br3 only has population data for date1.
+  var check_date1 = _.partial(check_date_data, date1, {br1: 11, br2: 22,
+                                                       br3: 33});
+  var check_date2 = _.partial(check_date_data, date2, {br1: 110, br2: 220});
 
   it('should return data for single dates', function() {
     return Promise.all([
