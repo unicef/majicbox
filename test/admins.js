@@ -19,8 +19,8 @@ describe('Import admins', function() {
     });
   });
 
-  after(function() {
-    mongoose.disconnect();
+  after(function(done) {
+    mongoose.disconnect(done);
   });
 
   describe('Admin data stored', function() {
