@@ -24,6 +24,21 @@ app.use(bodyParser.json());
 /* eslint new-cap: [2, {"capIsNewExceptions": ["express.Router"]}] */
 var router = express.Router(); // get an instance of the express Router
 
+router.route('/regions/:country_code')
+  .get(apicache('1 day'), function(req, res, next) {
+    util.get_regions(req.params.country_code)
+      .then(res.json.bind(res))
+      .catch(next);
+  });
+
+router.route('/mobility/:country_code/:region_code/:start_time?/:end_time?')
+  .get(apicache('1 day'), function(req, res, next) {
+    util.get_egress_mobility(req.params.country_code, req.params.region_code,
+                             req.params.start_time, req.params.end_time)
+      .then(res.json.bind(res))
+      .catch(next);
+  });
+
 /** Wrapper for get_region_populations.
  * @param{object} req - Express request object.
  * @param{object} res - Express ressponse object.
@@ -51,21 +66,6 @@ router.route('/region_populations/:country_code/:start_time')
   .get(apicache('1 day'), handle_region_populations);
 router.route('/region_populations/:country_code/:start_time/:end_time')
   .get(apicache('1 day'), handle_region_populations);
-
-router.route('/mobility/:country_code/:region_code/:start_time?/:end_time?')
-  .get(apicache('1 day'), function(req, res, next) {
-    util.get_egress_mobility(req.params.country_code, req.params.region_code,
-                             req.params.start_time, req.params.end_time)
-      .then(res.json.bind(res))
-      .catch(next);
-  });
-
-router.route('/regions/:country_code')
-  .get(apicache('1 day'), function(req, res, next) {
-    util.get_regions(req.params.country_code)
-      .then(res.json.bind(res))
-      .catch(next);
-  });
 
 // All of our routes will be prefixed with '/api'.
 app.use('/api', router);
