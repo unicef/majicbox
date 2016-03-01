@@ -37,7 +37,7 @@ var weather_schema = new mongoose.Schema({
 // documentation.
 
 // -1 for `date` to get most recent data first.
+weather_schema.index({country_code: 1, date: -1});
 weather_schema.index({country_code: 1, region_code: 1, date: -1});
-weather_schema.index({country_code: 1, region_code: 1, kind: 1, date: -1});
 
 module.exports = mongoose.model('Weather', weather_schema);
