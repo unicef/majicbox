@@ -2,8 +2,32 @@ var _ = require('lodash');
 
 var Mobility = require('./app/models/mobility');
 var Region = require('./app/models/region');
+var Weather = require('./app/models/weather');
+
+/**
+ * Wrapper for _.setWith that is like _.set, except it works with number
+ * strings. _.set with a number string in the path will create an array.
+ * Example: _.set({}, ['br', '1'], 'value') -> {"br": [null,"value"]}
+ * Versus: my_set({}, ['br', '1'], 'value') -> {"br": {"1": "value"}}
+ *
+ * @param{Object} object - Object to modify.
+ * @param{Array|string} path - The path of property to set.
+ * @param{*} value - Value to set in object.
+ * @return{Object} Returns object.
+ */
+function my_set(object, path, value) {
+  return _.setWith(object, path, value, Object);
+}
 
 // TODO(jetpack): Should these functions throw errors when there's no data?
+
+// A number of functions here take `start_time` and `end_time` parameters. The
+// semantics for each of these are the same (unless otherwise noted):
+// * If neither start_time nor end_time are given, the function returns the most
+//   recent data available.
+// * If only start_time given, returns data for that time.
+// * If both given, returns all data between the 2 times (inclusive).
+// * It's invalid for only end_time to be specified.
 
 /**
  * Return all regions for the country.
@@ -17,9 +41,68 @@ function get_regions(country_code) {
     .select('region_code name geo_area_sqkm geo_feature')
     .then(function(regions) {
       return regions.map(function(region) {
-        return _.pick(
-          region, ['region_code', 'name', 'geo_area_sqkm', 'geo_feature']);
+        var result = _.pick(region, ['region_code', 'name', 'geo_area_sqkm']);
+        // Strip off extra Mongoose document stuff from geo_feature subdocument.
+        result.geo_feature = region.geo_feature.toObject();
+        return result;
       });
+    });
+}
+
+/**
+ * Return weather data for all regions for the country.
+ *
+ * @param{string} country_code - Country.
+ * @param{Date} date - Requested date. If none given, return latest available
+ *   data.
+ * @return{Promise} Map from date to region code to Weather data. Example:
+ *   {'2016-02-28T00:00:00.000Z': {'br1': {'temp_mean': 23},
+ *                                 'br2': {'temp_mean': 25}}}
+*/
+function get_country_weather(country_code, date) {
+  var conditions = {country_code: country_code};
+  return get_date_condition(Weather, conditions, date)
+    .then(function(latest_date) {
+      if (!latest_date) { return {}; }
+      conditions.date = latest_date;
+      return Weather.find(conditions)
+        .select('region_code data')
+        .then(function(docs) {
+          return docs.reduce(function(result, doc) {
+            return my_set(result,
+                          [latest_date.toISOString(), doc.region_code],
+                          doc.data.toObject());
+          }, {});
+        });
+    });
+}
+
+/**
+ * Return weather data for given region.
+ *
+ * @param{string} country_code - Country.
+ * @param{string} region_code - Region.
+ * @param{Date} start_time - See comment near the top of this module.
+ * @param{Date} end_time - See comment near the top of this module.
+ * @return{Promise} Map from date to region code to Weather data. Example:
+ *   {'2016-02-28T00:00:00.000Z': {'br1': {'temp_mean': 23},
+ *                                 'br2': {'temp_mean': 25}}}
+*/
+function get_region_weather(country_code, region_code, start_time, end_time) {
+  var conditions = {country_code: country_code, region_code: region_code};
+  return get_date_condition(Weather, conditions, start_time, end_time)
+    .then(function(date_condition) {
+      if (!date_condition) { return {}; }
+      conditions.date = date_condition;
+      return Weather.find(conditions)
+        .select('date data')
+        .then(function(docs) {
+          return docs.reduce(function(result, doc) {
+            return my_set(result,
+                          [doc.date.toISOString(), region_code],
+                          doc.data.toObject());
+          }, {});
+        });
     });
 }
 
@@ -35,8 +118,8 @@ function get_regions(country_code) {
  *
  * @param{Model} model - Mongoose model collection.
  * @param{object} conditions - Conditions to filter for.
- * @param{Date} start_time - See `get_region_population` JSDoc.
- * @param{Date} end_time - See `get_region_population` JSDoc.
+ * @param{Date} start_time - See comment near the top of this module.
+ * @param{Date} end_time - See comment near the top of this module.
  * @return{Promise} Fulfilled with a value suitable for use as a condition
  *   filter on the `date` field *or* null if documents were found.
  */
@@ -48,6 +131,7 @@ function get_date_condition(model, conditions, start_time, end_time) {
   } else {
     return new Promise(function(res, rej) {
       model.findOne(conditions)
+        .select('date')
         .sort('-date')
         .exec(function(err, doc) {
           if (err) { return rej(err); }
@@ -64,8 +148,8 @@ function get_date_condition(model, conditions, start_time, end_time) {
  *
  * @param{string} country_code - Country.
  * @param{string} origin_region_code - Origin region.
- * @param{Date} start_time - Date. See comment for get_region_populations.
- * @param{Date} end_time - Date. See comment for get_region_populations.
+ * @param{Date} start_time - See comment near the top of this module.
+ * @param{Date} end_time - See comment near the top of this module.
  * @return{Promise} A mapping from date to destination region code to count
  *   value. Dates are in ISO string format. Counts represent movement from the
  *   origin region to each destination region. The origin and destination
@@ -80,17 +164,15 @@ function get_egress_mobility(country_code, origin_region_code, start_time,
   return get_date_condition(Mobility, conditions, start_time, end_time)
     .then(function(date_condition) {
       if (!date_condition) { return {}; }
+      conditions.date = date_condition;
       return new Promise(function(res, rej) {
-        conditions.date = date_condition;
         Mobility.find(conditions).exec(function(err, docs) {
           if (err) { return rej(err); }
-          var result = {};
-          docs.forEach(function(mobility) {
-            _.set(result, [mobility.date.toISOString(),
-                           mobility.destination_region_code],
-                  mobility.count);
-          });
-          res(result);
+          res(docs.reduce(function(result, mobility) {
+            return my_set(result, [mobility.date.toISOString(),
+                                   mobility.destination_region_code],
+                          mobility.count);
+          }, {}));
         });
       });
     });
@@ -100,11 +182,8 @@ function get_egress_mobility(country_code, origin_region_code, start_time,
  * Returns relative population estimates for the country based on mobility data.
  *
  * @param{string} country_code - Country.
- * @param{Date} start_time - Date. See comment for end_time.
- * @param{Date} end_time - Date. If neither start_time nor end_time are given,
- *   returns the most recent data available. If only start_time given, returns
- *   data for that time. If both given, returns all data between the 2 times
- *   (inclusive). It's invalid for only end_time to be specified.
+ * @param{Date} start_time - See comment near the top of this module.
+ * @param{Date} end_time - See comment near the top of this module.
  * @return{Promise} Nested mapping from date to region code to population value.
  *   Dates are in ISO string format. Example:
  *   {'2016-02-28T00:00:00.000Z': {'br1': 32123, 'br2': 75328},
@@ -130,8 +209,9 @@ function get_mobility_populations(country_code, start_time, end_time) {
             .exec(function(err, mobilities) {
               if (err) { return reject(err); }
               mobilities.forEach(function(mobility) {
-                _.set(result, [mobility.date.toISOString(), region.region_code],
-                      mobility.count);
+                my_set(result,
+                       [mobility.date.toISOString(), region.region_code],
+                       mobility.count);
               });
               resolve();
             });
@@ -175,8 +255,10 @@ var stopwatch = (function() {
 })();
 
 module.exports = {
+  get_regions: get_regions,
+  get_country_weather: get_country_weather,
+  get_region_weather: get_region_weather,
   get_egress_mobility: get_egress_mobility,
   get_mobility_populations: get_mobility_populations,
-  get_regions: get_regions,
   stopwatch: stopwatch
 };

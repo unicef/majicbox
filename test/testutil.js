@@ -1,7 +1,19 @@
+var _ = require('lodash');
+var assert = require('assert');
 var mongoose = require('mongoose');
 
 var config = require('../config');
 
+/**
+ * Wrapper around assert() and _.isEqual that also outputs a useful error upon
+ * failure.
+ *
+ * @param{object} o1 - Object the first.
+ * @param{object} o2 - Object the second.
+ */
+function assert_equal(o1, o2) {
+  assert(_.isEqual(o1, o2), JSON.stringify(o1) + ' != ' + JSON.stringify(o2));
+}
 /**
  * Drops all data from connected MongoDB.
  *
@@ -66,6 +78,7 @@ function save_documents(docs) {
 }
 
 module.exports = {
+  assert_equal: assert_equal,
   connect_and_clear_test_db: connect_and_clear_test_db,
   save_documents: save_documents
 };

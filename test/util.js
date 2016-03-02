@@ -4,6 +4,7 @@ var mongoose = require('mongoose');
 
 var Mobility = require('../app/models/mobility');
 var Region = require('../app/models/region');
+var Weather = require('../app/models/weather');
 var util = require('../util');
 
 var testutil = require('./testutil');
@@ -59,14 +60,8 @@ describe('get_regions', function() {
           assert(region_i);
           assert.strictEqual('District ' + i, region_i.name);
           assert.strictEqual(i * 100, region_i.geo_area_sqkm);
-          // TODO(jetpack): _.isEqual fails when testing the whole geo_feature
-          // for some reason.
-          assert(_.isEqual(geo_features[i_zero].properties,
-                           region_i.geo_feature.properties));
-          assert(_.isEqual(geo_features[i_zero].geometry.type,
-                           region_i.geo_feature.geometry.type));
-          assert(_.isEqual(geo_features[i_zero].geometry.coordinates,
-                           region_i.geo_feature.geometry.coordinates));
+          testutil.assert_equal(geo_features[i_zero],
+                                region_i.geo_feature);
         });
       });
   });
@@ -74,8 +69,161 @@ describe('get_regions', function() {
   it('should return empty object for unknown country', function() {
     return util.get_regions('unknown country code')
       .then(function(result) {
-        assert(_.isEqual(result, []));
+        testutil.assert_equal(result, []);
       });
+  });
+});
+
+describe('Weather functions', function() {
+  var country_code = 'br';
+  var date1 = new Date('1999-12-31');
+  var date2 = new Date('2000-01-01');
+  var date3 = new Date('2000-01-02');
+  var date1_key = date1.toISOString();
+  var date2_key = date2.toISOString();
+  var date3_key = date3.toISOString();
+
+  // Helper function for building Weather documents.
+  // eslint-disable-next-line require-jsdoc
+  function weather(date, region_code, temp_mean) {
+    return new Weather({
+      date: date,
+      country_code: country_code,
+      region_code: region_code,
+      data: {temp_mean: temp_mean}
+    });
+  }
+
+  // Data is missing for 'br1' for date3 and missing for 'br2' for date1.
+  before(function initialize_database() {
+    return testutil.connect_and_clear_test_db().then(function() {
+      return testutil.save_documents([
+        weather(date1, 'br1', 11),
+        weather(date2, 'br1', 21), weather(date2, 'br2', 22),
+        weather(date3, 'br2', 32)
+      ]);
+    });
+  });
+
+  after(function disconnect_database(done) {
+    mongoose.disconnect(done);
+  });
+
+  describe('get_country_weather', function() {
+    it('should return data for all regions for country', function() {
+      return Promise.all([
+        util.get_country_weather(country_code, date1)
+          .then(function(result) {
+            assert.strictEqual(1, _.size(result));
+            testutil.assert_equal({br1: {temp_mean: 11}}, result[date1_key]);
+          }),
+        util.get_country_weather(country_code, date2)
+          .then(function(result) {
+            assert.strictEqual(1, _.size(result));
+            testutil.assert_equal({br1: {temp_mean: 21}, br2: {temp_mean: 22}},
+                                  result[date2_key]);
+          }),
+        util.get_country_weather(country_code, date3)
+          .then(function(result) {
+            assert.strictEqual(1, _.size(result));
+            testutil.assert_equal({br2: {temp_mean: 32}}, result[date3_key]);
+          })
+      ]);
+    });
+
+    it('should return latest data when no date specified', function() {
+      return util.get_country_weather(country_code)
+        .then(function(result) {
+          assert.strictEqual(1, _.size(result));
+          testutil.assert_equal({br2: {temp_mean: 32}}, result[date3_key]);
+        });
+    });
+
+    it('should return empty object for unknown country', function() {
+      return util.get_country_weather('unknown country code')
+        .then(function(result) {
+          testutil.assert_equal(result, {});
+        });
+    });
+
+    it('should return empty object for dates we have no data for', function() {
+      return util.get_country_weather(country_code, new Date('1980-01-01'))
+        .then(function(result) {
+          testutil.assert_equal(result, {});
+        });
+    });
+  });
+
+  describe('get_region_weather', function() {
+    it('should return data for single dates ', function() {
+      return Promise.all([
+        util.get_region_weather(country_code, 'br1', date1)
+          .then(function(result) {
+            assert.strictEqual(1, _.size(result));
+            testutil.assert_equal({br1: {temp_mean: 11}}, result[date1_key]);
+          }),
+        util.get_region_weather(country_code, 'br1', date2)
+          .then(function(result) {
+            assert.strictEqual(1, _.size(result));
+            testutil.assert_equal({br1: {temp_mean: 21}}, result[date2_key]);
+          }),
+        util.get_region_weather(country_code, 'br2', date3)
+          .then(function(result) {
+            assert.strictEqual(1, _.size(result));
+            testutil.assert_equal({br2: {temp_mean: 32}}, result[date3_key]);
+          })
+      ]);
+    });
+
+    it('should return data for all dates in range', function() {
+      return Promise.all([
+        // Return data for all dates, inclusive.
+        util.get_region_weather(country_code, 'br2', date2, date3)
+          .then(function(result) {
+            assert.strictEqual(2, _.size(result));
+            testutil.assert_equal({br2: {temp_mean: 22}}, result[date2_key]);
+            testutil.assert_equal({br2: {temp_mean: 32}}, result[date3_key]);
+          }),
+        // Return data for all dates when given range is larger.
+        util.get_region_weather(country_code, 'br2', date1,
+                                new Date('3000-12-31'))
+          .then(function(result) {
+            assert.strictEqual(2, _.size(result));
+            testutil.assert_equal({br2: {temp_mean: 22}}, result[date2_key]);
+            testutil.assert_equal({br2: {temp_mean: 32}}, result[date3_key]);
+          }),
+        // Return data for just date2 when range excludes date3.
+        util.get_region_weather(country_code, 'br2', new Date('1999-01-01'),
+                                date2)
+          .then(function(result) {
+            assert.strictEqual(1, _.size(result));
+            testutil.assert_equal({br2: {temp_mean: 22}}, result[date2_key]);
+          })
+      ]);
+    });
+
+    it('should return latest data when no date specified', function() {
+      return util.get_region_weather(country_code, 'br2')
+        .then(function(result) {
+          assert.strictEqual(1, _.size(result));
+          testutil.assert_equal({br2: {temp_mean: 32}}, result[date3_key]);
+        });
+    });
+
+    it('should return empty object for unknown region', function() {
+      return util.get_region_weather(country_code, 'unknown region code')
+        .then(function(result) {
+          testutil.assert_equal(result, {});
+        });
+    });
+
+    it('should return empty object for dates we have no data for', function() {
+      return util.get_region_weather(country_code, 'br1',
+                                     new Date('1980-01-01'))
+        .then(function(result) {
+          testutil.assert_equal(result, {});
+        });
+    });
   });
 });
 
@@ -99,23 +247,23 @@ describe('get_mobility_populations', function() {
   before(function initialize_database() {
     return testutil.connect_and_clear_test_db().then(function() {
       var regions = [
-        new Region({country_code: country_code, region_code: 'br1'}),
-        new Region({country_code: country_code, region_code: 'br2'}),
-        new Region({country_code: country_code, region_code: 'br3'})
+        new Region({country_code: country_code, region_code: '1'}),
+        new Region({country_code: country_code, region_code: '2'}),
+        new Region({country_code: country_code, region_code: '3'})
       ];
       var mobility = [
         // date1:
-        movement(date1, 'br1', 'br1', 11),  // br1 self-migration
-        movement(date1, 'br1', 'br2', 12),
-        movement(date1, 'br1', 'br3', 13),
-        movement(date1, 'br2', 'br2', 22),  // br2 self-migration
-        movement(date1, 'br3', 'br3', 33),  // br3 self-migration
+        movement(date1, '1', '1', 11),  // 1 self-migration
+        movement(date1, '1', '2', 12),
+        movement(date1, '1', '3', 13),
+        movement(date1, '2', '2', 22),  // 2 self-migration
+        movement(date1, '3', '3', 33),  // 3 self-migration
         // date2:
-        movement(date2, 'br1', 'br1', 110),  // br1 self-migration
-        movement(date2, 'br1', 'br2', 120),
-        movement(date2, 'br1', 'br3', 130),
-        movement(date2, 'br2', 'br2', 220),  // br2 self-migration
-        movement(date2, 'br3', 'br2', 320)
+        movement(date2, '1', '1', 110),  // 1 self-migration
+        movement(date2, '1', '2', 120),
+        movement(date2, '1', '3', 130),
+        movement(date2, '2', '2', 220),  // 2 self-migration
+        movement(date2, '3', '2', 320)
       ];
       return testutil.save_documents(_.concat(regions, mobility));
     });
@@ -139,9 +287,7 @@ describe('get_mobility_populations', function() {
                            allow_multiple_dates_in_result) {
     var date_key = date.toISOString();
     assert(result[date_key], 'Expected data for date ' + date);
-    assert(_.isEqual(expected_data, result[date_key]),
-           JSON.stringify(expected_data) + ' != ' +
-           JSON.stringify(result[date_key]));
+    testutil.assert_equal(expected_data, result[date_key]);
     if (!allow_multiple_dates_in_result) {
       assert.strictEqual(
         1, _.size(result), 'Expected only 1 result but got: ' +
@@ -150,9 +296,11 @@ describe('get_mobility_populations', function() {
   }
 
   // Note that br3 only has population data for date1.
-  var check_date1 = _.partial(check_date_data, date1, {br1: 11, br2: 22,
-                                                       br3: 33});
-  var check_date2 = _.partial(check_date_data, date2, {br1: 110, br2: 220});
+  // eslint-disable-next-line quote-props
+  var check_date1 = _.partial(check_date_data, date1, {'1': 11, '2': 22,
+                                                       '3': 33});
+  // eslint-disable-next-line quote-props
+  var check_date2 = _.partial(check_date_data, date2, {'1': 110, '2': 220});
 
   it('should return data for single dates', function() {
     return Promise.all([
@@ -200,14 +348,14 @@ describe('get_mobility_populations', function() {
   it('should return empty object for unknown country', function() {
     return util.get_mobility_populations('unknown country code')
       .then(function(result) {
-        assert(_.isEqual(result, {}));
+        testutil.assert_equal(result, {});
       });
   });
 
   it('should return empty object for dates we have no data for', function() {
     return util.get_mobility_populations(country_code, new Date('1980-01-01'))
       .then(function(result) {
-        assert(_.isEqual(result, {}));
+        testutil.assert_equal(result, {});
       });
   });
 });
@@ -216,6 +364,8 @@ describe('get_egress_mobility', function() {
   var country_code = 'mx';
   var date1 = new Date('2016-03-14');
   var date2 = new Date('2016-03-15');
+  var date1_key = date1.toISOString();
+  var date2_key = date2.toISOString();
 
   // Helper function for building Mobility documents.
   var movement = _.partial(new_mobility, country_code);
@@ -251,12 +401,12 @@ describe('get_egress_mobility', function() {
       util.get_egress_mobility(country_code, 'mx1', date1)
         .then(function(result) {
           assert.strictEqual(1, _.size(result));
-          assert(_.isEqual({mx1: 11, mx2: 12}, result[date1.toISOString()]));
+          testutil.assert_equal({mx1: 11, mx2: 12}, result[date1_key]);
         }),
       util.get_egress_mobility(country_code, 'mx2', date2)
         .then(function(result) {
           assert.strictEqual(1, _.size(result));
-          assert(_.isEqual({mx1: 210, mx2: 220}, result[date2.toISOString()]));
+          testutil.assert_equal({mx1: 210, mx2: 220}, result[date2_key]);
         })
     ]);
   });
@@ -267,37 +417,36 @@ describe('get_egress_mobility', function() {
       util.get_egress_mobility(country_code, 'mx1', date1, date2)
         .then(function(result) {
           assert.strictEqual(2, _.size(result));
-          assert(_.isEqual({mx1: 11, mx2: 12}, result[date1.toISOString()]));
-          assert(_.isEqual({mx2: 120}, result[date2.toISOString()]));
+          testutil.assert_equal({mx1: 11, mx2: 12}, result[date1_key]);
+          testutil.assert_equal({mx2: 120}, result[date2_key]);
         }),
       // Return data for all dates when given range is larger.
       util.get_egress_mobility(country_code, 'mx2', new Date('1999-01-01'),
                                new Date('3000-12-31'))
         .then(function(result) {
           assert.strictEqual(2, _.size(result));
-          assert(_.isEqual({mx1: 21}, result[date1.toISOString()]));
-          assert(_.isEqual({mx1: 210, mx2: 220}, result[date2.toISOString()]));
+          testutil.assert_equal({mx1: 21}, result[date1_key]);
+          testutil.assert_equal({mx1: 210, mx2: 220}, result[date2_key]);
         }),
       // Return data for just date1 when range excludes date2.
       util.get_egress_mobility(country_code, 'mx1', new Date('1999-01-01'),
                                   date1)
         .then(function(result) {
           assert.strictEqual(1, _.size(result));
-          assert(_.isEqual({mx1: 11, mx2: 12}, result[date1.toISOString()]));
+          testutil.assert_equal({mx1: 11, mx2: 12}, result[date1_key]);
         })
     ]);
   });
 
   it('should return latest data when no date specified', function() {
-    var date_key = date2.toISOString();
     return Promise.all([
       util.get_egress_mobility(country_code, 'mx1').then(function(result) {
         assert.strictEqual(1, _.size(result));
-        assert(_.isEqual({mx2: 120}, result[date_key]));
+        testutil.assert_equal({mx2: 120}, result[date2_key]);
       }),
       util.get_egress_mobility(country_code, 'mx2').then(function(result) {
         assert.strictEqual(1, _.size(result));
-        assert(_.isEqual({mx1: 210, mx2: 220}, result[date_key]));
+        testutil.assert_equal({mx1: 210, mx2: 220}, result[date2_key]);
       })
     ]);
   });
@@ -306,15 +455,15 @@ describe('get_egress_mobility', function() {
     return Promise.all([
       util.get_egress_mobility('unknown country', 'unknown region')
         .then(function(result) {
-          assert(_.isEqual(result, {}));
+          testutil.assert_equal(result, {});
         }),
       util.get_egress_mobility('unknown country', 'mx1')
         .then(function(result) {
-          assert(_.isEqual(result, {}));
+          testutil.assert_equal(result, {});
         }),
       util.get_egress_mobility(country_code, 'unknown region')
         .then(function(result) {
-          assert(_.isEqual(result, {}));
+          testutil.assert_equal(result, {});
         })
     ]);
   });
@@ -322,7 +471,7 @@ describe('get_egress_mobility', function() {
   it('should return empty object for dates we have no data for', function() {
     return util.get_egress_mobility(country_code, 'mx1', new Date('1980-01-01'))
       .then(function(result) {
-        assert(_.isEqual(result, {}));
+        testutil.assert_equal(result, {});
       });
   });
 });
