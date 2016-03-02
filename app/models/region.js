@@ -6,7 +6,16 @@ var GeoJSON = require('mongoose-geojson-schema');
 
 var region_schema = new mongoose.Schema({
   // ISO 3166-1 alpha-2 two letter country code.
-  country_code: {type: String, index: true},
+  country_code: {
+    type: String,
+    index: true,
+    validate: {
+      validator: function(v) {
+        return /[a-z]{2}/.test(v);
+      },
+      message: '{VALUE} is not a valid name!'
+    }
+  },
   // Unique identifier for this region within the country (e.g. the 2nd part of
   // ISO 3166-2).
   region_code: String,
