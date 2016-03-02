@@ -10,13 +10,12 @@ describe('Import admins', function() {
   var admin_geojson = require('./data/geojson/' +
   country_code + '/admin2.json');
 
-  var file = 'admin2';
-  var path = './test/data/geojson/';
+  var file = './test/data/geojson/' + country_code + '/admin2.json';
 
   before(function initializeDatabase() {
     return testutil.connect_and_clear_test_db()
       .then(function() {
-        return importer.import_regions(country_code, file, path);
+        return importer.import_regions(country_code, file);
       });
   });
 
