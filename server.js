@@ -71,7 +71,10 @@ router.route(
   .get(apicache('1 day'), function(req, res) {
     var file = './static-assets/' + req.params.country_code + '_topo.json';
     jsonfile.readFile(file, function(err, topojson) {
-      if (err) { res.json(err);}
+      if (err) {
+        console.error(err);
+        res.json(err);
+      }
       res.json(topojson);
     });
   });
