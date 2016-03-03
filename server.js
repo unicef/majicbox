@@ -58,10 +58,12 @@ router.route('/country_weather/:country_code/:time?')
       .catch(next);
   });
 
-router.route('/country_weather/:country_code/:time?')
+router.route(
+  '/region_weather/:country_code/:region_code/:start_time?/:end_time?')
   .get(apicache('1 day'), function(req, res, next) {
     var p = req.params;
-    util.get_country_weather(p.country_code, date_param(p.time))
+    util.get_region_weather(p.country_code, p.region_code,
+                            date_param(p.start_time), date_param(p.end_time))
       .then(res.json.bind(res))
       .catch(next);
   });
