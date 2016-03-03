@@ -160,17 +160,17 @@ describe('Weather functions', function() {
         util.get_region_weather(country_code, 'br1', date1)
           .then(function(result) {
             assert.strictEqual(1, _.size(result));
-            testutil.assert_equal({br1: {temp_mean: 11}}, result[date1_key]);
+            testutil.assert_equal({temp_mean: 11}, result[date1_key]);
           }),
         util.get_region_weather(country_code, 'br1', date2)
           .then(function(result) {
             assert.strictEqual(1, _.size(result));
-            testutil.assert_equal({br1: {temp_mean: 21}}, result[date2_key]);
+            testutil.assert_equal({temp_mean: 21}, result[date2_key]);
           }),
         util.get_region_weather(country_code, 'br2', date3)
           .then(function(result) {
             assert.strictEqual(1, _.size(result));
-            testutil.assert_equal({br2: {temp_mean: 32}}, result[date3_key]);
+            testutil.assert_equal({temp_mean: 32}, result[date3_key]);
           })
       ]);
     });
@@ -181,23 +181,23 @@ describe('Weather functions', function() {
         util.get_region_weather(country_code, 'br2', date2, date3)
           .then(function(result) {
             assert.strictEqual(2, _.size(result));
-            testutil.assert_equal({br2: {temp_mean: 22}}, result[date2_key]);
-            testutil.assert_equal({br2: {temp_mean: 32}}, result[date3_key]);
+            testutil.assert_equal({temp_mean: 22}, result[date2_key]);
+            testutil.assert_equal({temp_mean: 32}, result[date3_key]);
           }),
         // Return data for all dates when given range is larger.
         util.get_region_weather(country_code, 'br2', date1,
                                 new Date('3000-12-31'))
           .then(function(result) {
             assert.strictEqual(2, _.size(result));
-            testutil.assert_equal({br2: {temp_mean: 22}}, result[date2_key]);
-            testutil.assert_equal({br2: {temp_mean: 32}}, result[date3_key]);
+            testutil.assert_equal({temp_mean: 22}, result[date2_key]);
+            testutil.assert_equal({temp_mean: 32}, result[date3_key]);
           }),
         // Return data for just date2 when range excludes date3.
         util.get_region_weather(country_code, 'br2', new Date('1999-01-01'),
                                 date2)
           .then(function(result) {
             assert.strictEqual(1, _.size(result));
-            testutil.assert_equal({br2: {temp_mean: 22}}, result[date2_key]);
+            testutil.assert_equal({temp_mean: 22}, result[date2_key]);
           })
       ]);
     });
@@ -206,7 +206,7 @@ describe('Weather functions', function() {
       return util.get_region_weather(country_code, 'br2')
         .then(function(result) {
           assert.strictEqual(1, _.size(result));
-          testutil.assert_equal({br2: {temp_mean: 32}}, result[date3_key]);
+          testutil.assert_equal({temp_mean: 32}, result[date3_key]);
         });
     });
 

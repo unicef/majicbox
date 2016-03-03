@@ -85,9 +85,9 @@ function get_country_weather(country_code, date) {
  * @param{Date} start_time - See comment near the top of this module.
  * @param{Date} end_time - See comment near the top of this module.
  * @return{Promise} Map from date to region code to Weather data. Example:
- *   {'2016-02-28T00:00:00.000Z': {'br1': {'temp_mean': 23},
- *                                 'br2': {'temp_mean': 25}}}
-*/
+ *   {'2016-02-29T00:00:00.000Z': {'temp_mean': 23},
+ *    '2016-02-28T00:00:00.000Z': {'temp_mean': 21}}
+ */
 function get_region_weather(country_code, region_code, start_time, end_time) {
   var conditions = {country_code: country_code, region_code: region_code};
   return get_date_condition(Weather, conditions, start_time, end_time)
@@ -97,11 +97,11 @@ function get_region_weather(country_code, region_code, start_time, end_time) {
       return Weather.find(conditions)
         .select('date data')
         .then(function(docs) {
-          return docs.reduce(function(result, doc) {
-            return my_set(result,
-                          [doc.date.toISOString(), region_code],
-                          doc.data.toObject());
-          }, {});
+          var result = {};
+          docs.forEach(function(doc) {
+            result[doc.date.toISOString()] = doc.data.toObject();
+          });
+          return result;
         });
     });
 }
