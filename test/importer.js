@@ -25,12 +25,17 @@ describe('Import admins', function() {
   });
 
   after(function(done) {
+    // Remove test topo file and dir
     fs.unlink(topo_dir + '/' + topo_file, function(err) {
-      if (err) { console.log(err);}
-      fs.rmdir(topo_dir, function(err) {
-        if (err) { console.log(err);}
-        mongoose.disconnect(done);
-      });
+      new Promise(function(resolve, reject) {
+        if (err) { return reject(err);}
+        fs.rmdir(topo_dir, function(err) {
+          if (err) { console.log(err);}
+          resolve();
+        });
+      })
+      .then(mongoose.disconnect(done))
+      .catch(function(err) {throw (err);});
     });
   });
 
