@@ -43,8 +43,8 @@ describe('Import admins', function() {
     it('should store topojson', function(done) {
       file = './test/static-assets/br_topo.json';
       jsonfile.readFile(file, function(err, topojson) {
-        if (err) { console.log(err);}
         assert(topojson);
+        assert.ifError(err);
         done();
       });
     });
