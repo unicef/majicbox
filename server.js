@@ -67,7 +67,7 @@ router.route('/country_weather/:country_code/:time?')
   });
 
 router.route(
-  '/topojson/:country_code')
+  '/admin_polygons_topojson/:country_code')
   .get(apicache('1 day'), function(req, res) {
     var file = './static-assets/' + req.params.country_code + '_topo.json';
     jsonfile.readFile(file, function(err, topojson) {
