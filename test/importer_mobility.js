@@ -23,6 +23,7 @@ describe('Import mobility', function() {
     mongoose.disconnect(done);
   });
 
+  // TODO(mikefab): make test more robust.
   describe('Mobility data stored', function() {
     it(
       'should store origin',
