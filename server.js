@@ -71,7 +71,7 @@ router.route(
 router.route(
   '/admin_polygons_topojson/:country_code')
   .get(apicache('1 day'), function(req, res) {
-    var file = './static-assets/' + req.params.country_code + '_topo.json';
+    var file = './data/static-assets/' + req.params.country_code + '_topo.json';
     jsonfile.readFile(file, function(err, topojson) {
       if (err) {
         console.error(err);
