@@ -1,12 +1,17 @@
 var assert = require('chai').assert;
+var fs = require('fs');
+var jsonfile = require('jsonfile');
 var mongoose = require('mongoose');
 
 var importer = require('../lib/import/region');
 var Region = require('../app/models/region');
 var testutil = require('./testutil');
 
+var topo_dir = './test/static-assets/';
+var country_code = 'br';
+var topo_file = country_code + '_topo.json';
+
 describe('Import admins', function() {
-  var country_code = 'br';
   var admin_geojson = require('./data/geojson/' +
   country_code + '/admin2.json');
 
@@ -20,10 +25,30 @@ describe('Import admins', function() {
   });
 
   after(function(done) {
-    mongoose.disconnect(done);
+    // Remove test topo file and dir
+    fs.unlink(topo_dir + '/' + topo_file, function(err) {
+      new Promise(function(resolve, reject) {
+        if (err) { return reject(err);}
+        fs.rmdir(topo_dir, function(err) {
+          if (err) { console.log(err);}
+          resolve();
+        });
+      })
+      .then(mongoose.disconnect(done))
+      .catch(function(err) {throw (err);});
+    });
   });
 
   describe('Admin data stored', function() {
+    it('should store topojson', function(done) {
+      file = './test/static-assets/br_topo.json';
+      jsonfile.readFile(file, function(err, topojson) {
+        assert(topojson);
+        assert.ifError(err);
+        done();
+      });
+    });
+
     it('should store name', function(done) {
       var all_done = [];
       admin_geojson.features.forEach(function(feature) {

@@ -5,6 +5,7 @@ var apicache = require('apicache').options({debug: true}).middleware;
 var bodyParser = require('body-parser');
 var compression = require('compression');
 var express = require('express');
+var jsonfile = require('jsonfile');
 var mongoose = require('mongoose');
 var morgan = require('morgan');
 
@@ -65,6 +66,19 @@ router.route(
                             date_param(p.start_time), date_param(p.end_time))
       .then(res.json.bind(res))
       .catch(next);
+  });
+
+router.route(
+  '/admin_polygons_topojson/:country_code')
+  .get(apicache('1 day'), function(req, res) {
+    var file = './static-assets/' + req.params.country_code + '_topo.json';
+    jsonfile.readFile(file, function(err, topojson) {
+      if (err) {
+        console.error(err);
+        res.json(err);
+      }
+      res.json(topojson);
+    });
   });
 
 router.route('/mobility/:country_code/:region_code/:start_time?/:end_time?')

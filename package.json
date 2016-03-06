@@ -19,7 +19,7 @@
     "mongoose": "^4.4.5",
     "mongoose-geojson-schema": "0.0.2",
     "morgan": "^1.7.0",
-    "should": "^8.2.2"
+    "topojson": "^1.6.24"
   },
   "devDependencies": {
     "eslint": "^2.2.0",
