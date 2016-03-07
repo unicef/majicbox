@@ -14,7 +14,7 @@
     "express": "^4.13.4",
     "geojson-area": "^0.2.1",
     "jsonfile": "^2.2.3",
-    "lodash": "^4.5.1",
+    "lodash": "^4.6.1",
     "mocha": "^2.4.5",
     "mongoose": "^4.4.5",
     "mongoose-geojson-schema": "0.0.2",
