@@ -7,4 +7,5 @@ COPY ./package.json /code/package.json
 RUN npm install
 
 COPY . /code
-CMD node server.js
+EXPOSE 8000
+CMD ./scripts/entrypoint.sh

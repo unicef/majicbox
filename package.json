@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "apicache": "0.0.12",
+    "argparse": "^1.0.6",
     "body-parser": "^1.15.0",
     "chai": "^3.5.0",
     "compression": "^1.6.1",
