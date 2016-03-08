@@ -77,6 +77,8 @@ function get_country_weather(country_code, date) {
     });
 }
 
+// TODO(jetpack): hey this can probably be merged into the previous function?
+
 /**
  * Return weather data for given region.
  *
@@ -85,8 +87,8 @@ function get_country_weather(country_code, date) {
  * @param{Date} start_time - See comment near the top of this module.
  * @param{Date} end_time - See comment near the top of this module.
  * @return{Promise} Map from date to region code to Weather data. Example:
- *   {'2016-02-29T00:00:00.000Z': {'temp_mean': 23},
- *    '2016-02-28T00:00:00.000Z': {'temp_mean': 21}}
+ *   {'2016-02-29T00:00:00.000Z': {'br1': {'temp_mean': 23}},
+ *    '2016-02-28T00:00:00.000Z': {'br1': {'temp_mean': 21}}}
  */
 function get_region_weather(country_code, region_code, start_time, end_time) {
   var conditions = {country_code: country_code, region_code: region_code};
@@ -99,7 +101,9 @@ function get_region_weather(country_code, region_code, start_time, end_time) {
         .then(function(docs) {
           var result = {};
           docs.forEach(function(doc) {
-            result[doc.date.toISOString()] = doc.data.toObject();
+            var bleh = {};
+            bleh[region_code] = doc.data.toObject();
+            result[doc.date.toISOString()] = bleh;
           });
           return result;
         });
