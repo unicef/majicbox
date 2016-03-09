@@ -13,8 +13,8 @@ installed to use it. Check out the Mongodb installation information at:
 - `git clone git@github.com:mikefab/majicbox.git`
 - `cd majicbox`
 - `npm install`
-- `cp -r data-sample data`
-- `node lib/import/region.js -f './data/geojson/br/admin2.json' -c 'br' --verbose true`
+- **Get Azure credentials**. You should end up with a line like `export AZURE_STORAGE_ACCOUNT=zika1093 AZURE_STORAGE_ACCESS_KEY=....`. For security reasons, we don't distribute keys with the repository; ask around.
+- `node lib/blob-sync/download-from-azure.js`
 - `NODE_ENV=development nodemon server.js 8000`
 - browse to http://localhost:8000/api
 
