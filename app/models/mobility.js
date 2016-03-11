@@ -12,21 +12,15 @@ var mobility_schema = new mongoose.Schema({
   date: Date,
   // Data subtype (e.g. "daily"/"hourly", "day"/"night", etc.).
   kind: String,
-  // ISO 3166-1 alpha-2 two letter country code.
-  //
-  // Note: this country applies to both the origin and destination region codes,
-  // so this schema can't represent inter-country mobility. There are a few
-  // options to enable that, if we need it:
-  // * Rename `country_code` to `origin_country_code`, and add country codes to
-  //   all the destination data.
-  // * Change the Region schema's region_code to be globally unique (currently,
-  //   they only need to be unique within a country).
-  country_code: String,
+  // ISO 3166-1 alpha-2 two letter country codes. NOTE: there are no indexes on these because we
+  // don't have a usecase for it (yet).
+  origin_country_code: String,
+  destination_country_code: String,
 
-  // Movement origin and destination. Both values should match a Region
-  // document's region_code.
-  origin_region_code: String,
-  destination_region_code: String,
+  // Movement origin and destination. Both values should match a Admin
+  // document's admin_code.
+  origin_admin_code: String,
+  destination_admin_code: String,
   // Amount of movement from origin to destination.
   count: Number,
 
@@ -46,8 +40,8 @@ var mobility_schema = new mongoose.Schema({
 // [3] https://docs.mongodb.org/manual/reference/explain-results/
 
 // -1 for `date` to get most recent data first.
-mobility_schema.index({country_code: 1, origin_region_code: 1, date: -1});
-mobility_schema.index({country_code: 1, origin_region_code: 1,
-                       destination_region_code: 1, date: -1});
+mobility_schema.index({origin_admin_code: 1, date: -1});
+mobility_schema.index({origin_admin_code: 1, destination_admin_code: 1,
+                       date: -1});
 
 module.exports = mongoose.model('Mobility', mobility_schema);
