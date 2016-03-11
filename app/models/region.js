@@ -20,6 +20,7 @@ var region_schema = new mongoose.Schema({
   region_code: String,
   // Human-readable name, like "São Bernardo do Campo".
   name: String,
+  population: Number,
   // Area of the region in square kilometers.
   geo_area_sqkm: Number,
   // Polygon of the region. Note: in practice, we send this data in TopoJSON format as simplified
