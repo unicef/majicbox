@@ -16,18 +16,15 @@ var region_schema = new mongoose.Schema({
       message: '{VALUE} is not a valid name!'
     }
   },
-  // Unique identifier for this region within the country (e.g. the 2nd part of
-  // ISO 3166-2).
+  // Globally unique identifier for this region. Should contain `<country_code>-` as a prefix.
   region_code: String,
   // Human-readable name, like "São Bernardo do Campo".
   name: String,
   // Area of the region in square kilometers.
   geo_area_sqkm: Number,
-  // Polygon of the region.
+  // Polygon of the region. Note: in practice, we send this data in TopoJSON format as simplified
+  // polygons instead. See `lib/import/region.js`.
   geo_feature: GeoJSON.Feature
-  // TODO(jetpack): perhaps store a simplified polygon (or polygons?) for use
-  // when zoomed out?
-  // geo_feature_simplified: GeoJSON.Feature
 });
 
 region_schema.index({country_code: 1, region_code: 1});
