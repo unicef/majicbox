@@ -25,9 +25,9 @@ app.use(bodyParser.json());
 /* eslint new-cap: [2, {"capIsNewExceptions": ["express.Router"]}] */
 var router = express.Router(); // get an instance of the express Router
 
-router.route('/regions/:country_code')
+router.route('/admins/:country_code')
   .get(apicache('1 day'), function(req, res, next) {
-    util.get_regions(req.params.country_code)
+    util.get_admins(req.params.country_code)
       .then(res.json.bind(res))
       .catch(next);
   });
@@ -59,11 +59,11 @@ router.route('/country_weather/:country_code/:time?')
   });
 
 router.route(
-  '/region_weather/:country_code/:region_code/:start_time?/:end_time?')
+  '/admin_weather/:admin_code/:start_time?/:end_time?')
   .get(apicache('1 day'), function(req, res, next) {
     var p = req.params;
-    util.get_region_weather(p.country_code, p.region_code,
-                            date_param(p.start_time), date_param(p.end_time))
+    util.get_admin_weather(p.admin_code, date_param(p.start_time),
+                           date_param(p.end_time))
       .then(res.json.bind(res))
       .catch(next);
   });
@@ -81,11 +81,11 @@ router.route(
     });
   });
 
-router.route('/mobility/:country_code/:region_code/:start_time?/:end_time?')
+router.route('/mobility/:admin_code/:start_time?/:end_time?')
   .get(apicache('1 day'), function(req, res, next) {
     var p = req.params;
-    util.get_egress_mobility(p.country_code, p.region_code,
-                             date_param(p.start_time), date_param(p.end_time))
+    util.get_egress_mobility(p.admin_code, date_param(p.start_time),
+                             date_param(p.end_time))
       .then(res.json.bind(res))
       .catch(next);
   });
