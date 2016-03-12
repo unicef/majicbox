@@ -58,10 +58,12 @@ router.route('/country_weather/:country_code/:time?')
       .catch(next);
   });
 
-router.route('/country_weather/:country_code/:time?')
+router.route(
+  '/region_weather/:country_code/:region_code/:start_time?/:end_time?')
   .get(apicache('1 day'), function(req, res, next) {
     var p = req.params;
-    util.get_country_weather(p.country_code, date_param(p.time))
+    util.get_region_weather(p.country_code, p.region_code,
+                            date_param(p.start_time), date_param(p.end_time))
       .then(res.json.bind(res))
       .catch(next);
   });
@@ -69,9 +71,12 @@ router.route('/country_weather/:country_code/:time?')
 router.route(
   '/admin_polygons_topojson/:country_code')
   .get(apicache('1 day'), function(req, res) {
-    var file = './static-assets/' + req.params.country_code + '_topo.json';
+    var file = './data/static-assets/' + req.params.country_code + '_topo.json';
     jsonfile.readFile(file, function(err, topojson) {
-      if (err) { res.json(err);}
+      if (err) {
+        console.error(err);
+        res.json(err);
+      }
       res.json(topojson);
     });
   });

@@ -98,9 +98,9 @@ describe('Weather functions', function() {
   before(function initialize_database() {
     return testutil.connect_and_clear_test_db().then(function() {
       return testutil.save_documents([
-        weather(date1, 'br1', 11),
-        weather(date2, 'br1', 21), weather(date2, 'br2', 22),
-        weather(date3, 'br2', 32)
+        weather(date1, '1', 11),
+        weather(date2, '1', 21), weather(date2, '2', 22),
+        weather(date3, '2', 32)
       ]);
     });
   });
@@ -115,18 +115,18 @@ describe('Weather functions', function() {
         util.get_country_weather(country_code, date1)
           .then(function(result) {
             assert.strictEqual(1, _.size(result));
-            testutil.assert_equal({br1: {temp_mean: 11}}, result[date1_key]);
+            testutil.assert_equal({1: {temp_mean: 11}}, result[date1_key]);
           }),
         util.get_country_weather(country_code, date2)
           .then(function(result) {
             assert.strictEqual(1, _.size(result));
-            testutil.assert_equal({br1: {temp_mean: 21}, br2: {temp_mean: 22}},
+            testutil.assert_equal({1: {temp_mean: 21}, 2: {temp_mean: 22}},
                                   result[date2_key]);
           }),
         util.get_country_weather(country_code, date3)
           .then(function(result) {
             assert.strictEqual(1, _.size(result));
-            testutil.assert_equal({br2: {temp_mean: 32}}, result[date3_key]);
+            testutil.assert_equal({2: {temp_mean: 32}}, result[date3_key]);
           })
       ]);
     });
@@ -135,7 +135,7 @@ describe('Weather functions', function() {
       return util.get_country_weather(country_code)
         .then(function(result) {
           assert.strictEqual(1, _.size(result));
-          testutil.assert_equal({br2: {temp_mean: 32}}, result[date3_key]);
+          testutil.assert_equal({2: {temp_mean: 32}}, result[date3_key]);
         });
     });
 
@@ -157,20 +157,20 @@ describe('Weather functions', function() {
   describe('get_region_weather', function() {
     it('should return data for single dates ', function() {
       return Promise.all([
-        util.get_region_weather(country_code, 'br1', date1)
+        util.get_region_weather(country_code, '1', date1)
           .then(function(result) {
             assert.strictEqual(1, _.size(result));
-            testutil.assert_equal({br1: {temp_mean: 11}}, result[date1_key]);
+            testutil.assert_equal({1: {temp_mean: 11}}, result[date1_key]);
           }),
-        util.get_region_weather(country_code, 'br1', date2)
+        util.get_region_weather(country_code, '1', date2)
           .then(function(result) {
             assert.strictEqual(1, _.size(result));
-            testutil.assert_equal({br1: {temp_mean: 21}}, result[date2_key]);
+            testutil.assert_equal({1: {temp_mean: 21}}, result[date2_key]);
           }),
-        util.get_region_weather(country_code, 'br2', date3)
+        util.get_region_weather(country_code, '2', date3)
           .then(function(result) {
             assert.strictEqual(1, _.size(result));
-            testutil.assert_equal({br2: {temp_mean: 32}}, result[date3_key]);
+            testutil.assert_equal({2: {temp_mean: 32}}, result[date3_key]);
           })
       ]);
     });
@@ -178,35 +178,35 @@ describe('Weather functions', function() {
     it('should return data for all dates in range', function() {
       return Promise.all([
         // Return data for all dates, inclusive.
-        util.get_region_weather(country_code, 'br2', date2, date3)
+        util.get_region_weather(country_code, '2', date2, date3)
           .then(function(result) {
             assert.strictEqual(2, _.size(result));
-            testutil.assert_equal({br2: {temp_mean: 22}}, result[date2_key]);
-            testutil.assert_equal({br2: {temp_mean: 32}}, result[date3_key]);
+            testutil.assert_equal({2: {temp_mean: 22}}, result[date2_key]);
+            testutil.assert_equal({2: {temp_mean: 32}}, result[date3_key]);
           }),
         // Return data for all dates when given range is larger.
-        util.get_region_weather(country_code, 'br2', date1,
+        util.get_region_weather(country_code, '2', date1,
                                 new Date('3000-12-31'))
           .then(function(result) {
             assert.strictEqual(2, _.size(result));
-            testutil.assert_equal({br2: {temp_mean: 22}}, result[date2_key]);
-            testutil.assert_equal({br2: {temp_mean: 32}}, result[date3_key]);
+            testutil.assert_equal({2: {temp_mean: 22}}, result[date2_key]);
+            testutil.assert_equal({2: {temp_mean: 32}}, result[date3_key]);
           }),
         // Return data for just date2 when range excludes date3.
-        util.get_region_weather(country_code, 'br2', new Date('1999-01-01'),
+        util.get_region_weather(country_code, '2', new Date('1999-01-01'),
                                 date2)
           .then(function(result) {
             assert.strictEqual(1, _.size(result));
-            testutil.assert_equal({br2: {temp_mean: 22}}, result[date2_key]);
+            testutil.assert_equal({2: {temp_mean: 22}}, result[date2_key]);
           })
       ]);
     });
 
     it('should return latest data when no date specified', function() {
-      return util.get_region_weather(country_code, 'br2')
+      return util.get_region_weather(country_code, '2')
         .then(function(result) {
           assert.strictEqual(1, _.size(result));
-          testutil.assert_equal({br2: {temp_mean: 32}}, result[date3_key]);
+          testutil.assert_equal({2: {temp_mean: 32}}, result[date3_key]);
         });
     });
 
@@ -218,7 +218,7 @@ describe('Weather functions', function() {
     });
 
     it('should return empty object for dates we have no data for', function() {
-      return util.get_region_weather(country_code, 'br1',
+      return util.get_region_weather(country_code, '1',
                                      new Date('1980-01-01'))
         .then(function(result) {
           testutil.assert_equal(result, {});

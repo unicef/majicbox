@@ -13,9 +13,10 @@ installed to use it. Check out the Mongodb installation information at:
 - `git clone git@github.com:mikefab/majicbox.git`
 - `cd majicbox`
 - `npm install`
-- `cp -r data-sample data`
+- **Get Azure credentials**. You should end up with a line like `export AZURE_STORAGE_ACCOUNT=zika1093 AZURE_STORAGE_ACCESS_KEY=....`. For security reasons, we don't distribute keys with the repository; ask around.
+- `node lib/blob-sync/download-from-azure.js`
 - `node lib/import/region.js -f './data/geojson/br/admin2.json' -c 'br' --verbose true`
-- `node lib/import/mobility.js -d './data/mobility/br' -c 'br' --verbose true`
+- `node lib/import/fake.js -c 'br'`
 - `NODE_ENV=development nodemon server.js 8000`
 - browse to http://localhost:8000/api
 
@@ -53,3 +54,25 @@ updated.
 npm install -g nodemon
 NODE_ENV=development nodemon server.js 8002
 ```
+
+## Importing a new country
+### Get shapefile
+- Browse to http://gadm.org/country
+- select country
+- select shapefile
+- click download
+
+### Convert shapefile to geojson
+This process requires the [GDAL - Geospatial Data Abstraction Library](http://www.gdal.org/)
+
+(On Mac OSX: brew install gdal)
+
+- Unzip file, and change into directory.
+- Run the following command where country-code is an [ISO 3166-1 alpha-3 code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3):
+ `ogr2ogr -f GeoJSON admin2.json country-code_adm2.shp`
+- Create directory for country in data/geojson using its ISO [3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) code.
+Example for Colombia: `mkdir ./data/geojson/co`
+- Move admin2.json to data/geojson/country code.
+- From project root run the following command where -c is country code:
+
+`node lib/import/region.js -f './data/geojson/br/admin2.json' -c 'co' --verbose true`

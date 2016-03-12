@@ -8,6 +8,8 @@
   },
   "dependencies": {
     "apicache": "0.0.12",
+    "argparse": "^1.0.6",
+    "azure-storage": "^0.8.0",
     "body-parser": "^1.15.0",
     "chai": "^3.5.0",
     "compression": "^1.6.1",
@@ -15,11 +17,12 @@
     "fast-csv": "^1.0.0",
     "geojson-area": "^0.2.1",
     "jsonfile": "^2.2.3",
-    "lodash": "^4.5.1",
+    "lodash": "^4.6.1",
     "mocha": "^2.4.5",
     "mongoose": "^4.4.5",
     "mongoose-geojson-schema": "0.0.2",
     "morgan": "^1.7.0",
+    "q": "^1.4.1",
     "topojson": "^1.6.24"
   },
   "devDependencies": {
