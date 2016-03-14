@@ -40,10 +40,12 @@ describe('Import admins', function() {
   });
 
   describe('Admin data stored', function() {
-    it('should store topojson', function(done) {
+    it('should store population and area in topojson', function(done) {
       file = './test/static-assets/br_topo.json';
       jsonfile.readFile(file, function(err, topojson) {
-        assert(topojson);
+        var col = topojson.objects.collection;
+        assert(col.geometries[0].properties.population);
+        assert(col.geometries[0].properties.geo_area_sqkm);
         assert.ifError(err);
         done();
       });
@@ -63,6 +65,7 @@ describe('Import admins', function() {
               assert(admin.admin_code, 'admin_code has not been set!');
               assert(admin.name, 'name has not been set!');
               assert(admin.geo_area_sqkm, 'geo_area_sqkm has not been set!');
+              assert(admin.population, 'population has not been set!');
               assert(admin.geo_feature, 'geo_feature has not been set!');
               resolve();
             });
