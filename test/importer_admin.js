@@ -3,8 +3,8 @@ var fs = require('fs');
 var jsonfile = require('jsonfile');
 var mongoose = require('mongoose');
 
-var importer = require('../lib/import/region');
-var Region = require('../app/models/region');
+var importer = require('../lib/import/admin');
+var Admin = require('../app/models/admin');
 var testutil = require('./testutil');
 
 var topo_dir = './test/static-assets/';
@@ -20,7 +20,7 @@ describe('Import admins', function() {
   before(function initializeDatabase() {
     return testutil.connect_and_clear_test_db()
       .then(function() {
-        return importer.import_regions(country_code, file);
+        return importer.import_admins(country_code, file);
       });
   });
 
@@ -53,18 +53,17 @@ describe('Import admins', function() {
       var all_done = [];
       admin_geojson.features.forEach(function(feature) {
         var promise = new Promise(function(resolve) {
-          Region.findOne(
-            {region_code: feature.properties.ID_2},
+          Admin.findOne(
+            {admin_code: 'br-' + feature.properties.ID_2},
             function(err, admin) {
               if (err) {throw err;}
-
               assert.strictEqual(
-                String(feature.properties.ID_2),
-                admin.region_code
+                String('br-' + feature.properties.ID_2),
+                admin.admin_code
               );
 
               assert.match(admin.country_code, /[a-z]{2}/, 'regexp matches');
-              assert(admin.region_code, 'region_code has not been set!');
+              assert(admin.admin_code, 'admin_code has not been set!');
               assert(admin.name, 'Name has not been set!');
               assert(admin.geo_area_sqkm, 'geo_area_sqkm has not been set!');
               assert(admin.geo_feature, 'geo_feature has not been set!');

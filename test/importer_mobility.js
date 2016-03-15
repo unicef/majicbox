@@ -32,17 +32,17 @@ describe('Import mobility', function() {
         var count = 0;
         csv.fromPath(test_migrations_dir + '/' + test_migrations_csv_filename)
         .on('data', function(data) {
-          var origin_region_code = data[1];
+          var origin_admin_code = data[1];
           var promise = new Promise(function(resolve) {
             // Get first mobility record (starts on the second line after row headers)
             if (count === 1) {
               Mobility.find({
-                origin_region_code: origin_region_code
+                origin_admin_code: origin_admin_code
               }, function(err, records) {
                 assert.ifError(err, 'error finding record');
                 assert.strictEqual(
-                  origin_region_code,
-                  records[0].origin_region_code
+                  origin_admin_code,
+                  records[0].origin_admin_code
                 );
                 resolve();
               });
