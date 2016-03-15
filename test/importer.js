@@ -16,11 +16,12 @@ describe('Import admins', function() {
   country_code + '/admin2.json');
 
   var file = './test/data/geojson/' + country_code + '/admin2.json';
+  var population_file = 'worldpop_br.csv';
 
   before(function initializeDatabase() {
     return testutil.connect_and_clear_test_db()
       .then(function() {
-        return importer.import_admins(country_code, file);
+        return importer.import_admins(country_code, file, population_file);
       });
   });
 
