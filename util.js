@@ -1,7 +1,7 @@
 var _ = require('lodash');
 
+var Admin = require('./app/models/admin');
 var Mobility = require('./app/models/mobility');
-var Region = require('./app/models/region');
 var Weather = require('./app/models/weather');
 
 /**
@@ -30,34 +30,34 @@ function my_set(object, path, value) {
 // * It's invalid for only end_time to be specified.
 
 /**
- * Return all regions for the country.
+ * Return all admins for the country.
  *
  * @param{string} country_code - Country.
- * @return{Promise} Array of Region objects with properties `region_code`,
+ * @return{Promise} Array of Admin objects with properties `admin_code`,
  *   `name`, `geo_area_sqkm`, and `geo_feature`.
 */
-function get_regions(country_code) {
-  return Region.find({country_code: country_code})
-    .select('region_code name geo_area_sqkm geo_feature')
-    .then(function(regions) {
-      return regions.map(function(region) {
-        var result = _.pick(region, ['region_code', 'name', 'geo_area_sqkm']);
+function get_admins(country_code) {
+  return Admin.find({country_code: country_code})
+    .select('admin_code name geo_area_sqkm geo_feature')
+    .then(function(admins) {
+      return admins.map(function(admin) {
+        var result = _.pick(admin, ['admin_code', 'name', 'geo_area_sqkm']);
         // Strip off extra Mongoose document stuff from geo_feature subdocument.
-        result.geo_feature = region.geo_feature.toObject();
+        result.geo_feature = admin.geo_feature.toObject();
         return result;
       });
     });
 }
 
 /**
- * Return weather data for all regions for the country.
+ * Return weather data for all admins for the country.
  *
  * @param{string} country_code - Country.
  * @param{Date} date - Requested date. If none given, return latest available
  *   data.
- * @return{Promise} Map from date to region code to Weather data. Example:
- *   {'2016-02-28T00:00:00.000Z': {'br1': {'temp_mean': 23},
- *                                 'br2': {'temp_mean': 25}}}
+ * @return{Promise} Map from date to admin code to Weather data. Example:
+ *   {'2016-02-28T00:00:00.000Z': {'br-1': {'temp_mean': 23},
+ *                                 'br-2': {'temp_mean': 25}}}
 */
 function get_country_weather(country_code, date) {
   var conditions = {country_code: country_code};
@@ -66,11 +66,11 @@ function get_country_weather(country_code, date) {
       if (!latest_date) { return {}; }
       conditions.date = latest_date;
       return Weather.find(conditions)
-        .select('region_code data')
+        .select('admin_code data')
         .then(function(docs) {
           return docs.reduce(function(result, doc) {
             return my_set(result,
-                          [latest_date.toISOString(), doc.region_code],
+                          [latest_date.toISOString(), doc.admin_code],
                           doc.data.toObject());
           }, {});
         });
@@ -80,18 +80,17 @@ function get_country_weather(country_code, date) {
 // TODO(jetpack): hey this can probably be merged into the previous function?
 
 /**
- * Return weather data for given region.
+ * Return weather data for given admin.
  *
- * @param{string} country_code - Country.
- * @param{string} region_code - Region.
+ * @param{string} admin_code - Admin.
  * @param{Date} start_time - See comment near the top of this module.
  * @param{Date} end_time - See comment near the top of this module.
- * @return{Promise} Map from date to region code to Weather data. Example:
- *   {'2016-02-29T00:00:00.000Z': {'br1': {'temp_mean': 23}},
- *    '2016-02-28T00:00:00.000Z': {'br1': {'temp_mean': 21}}}
+ * @return{Promise} Map from date to admin code to Weather data. Example:
+ *   {'2016-02-29T00:00:00.000Z': {'br-1': {'temp_mean': 23}},
+ *    '2016-02-28T00:00:00.000Z': {'br-1': {'temp_mean': 21}}}
  */
-function get_region_weather(country_code, region_code, start_time, end_time) {
-  var conditions = {country_code: country_code, region_code: region_code};
+function get_admin_weather(admin_code, start_time, end_time) {
+  var conditions = {admin_code: admin_code};
   return get_date_condition(Weather, conditions, start_time, end_time)
     .then(function(date_condition) {
       if (!date_condition) { return {}; }
@@ -99,10 +98,12 @@ function get_region_weather(country_code, region_code, start_time, end_time) {
       return Weather.find(conditions)
         .select('date data')
         .then(function(docs) {
+          // TODO(jetpack): use _.reduce + my_set pattern, like with
+          // get_egress_mobility.
           var result = {};
           docs.forEach(function(doc) {
             var bleh = {};
-            bleh[region_code] = doc.data.toObject();
+            bleh[admin_code] = doc.data.toObject();
             result[doc.date.toISOString()] = bleh;
           });
           return result;
@@ -147,24 +148,21 @@ function get_date_condition(model, conditions, start_time, end_time) {
 }
 
 /**
- * Returns egress mobility data for a region. This indicates movement out of a
- * region and into other regions.
+ * Returns egress mobility data for a admin. This indicates movement out of a
+ * admin and into other admins.
  *
- * @param{string} country_code - Country.
- * @param{string} origin_region_code - Origin region.
+ * @param{string} origin_admin_code - Origin admin.
  * @param{Date} start_time - See comment near the top of this module.
  * @param{Date} end_time - See comment near the top of this module.
- * @return{Promise} A mapping from date to destination region code to count
+ * @return{Promise} A mapping from date to destination admin code to count
  *   value. Dates are in ISO string format. Counts represent movement from the
- *   origin region to each destination region. The origin and destination
- *   regions can be the same, indicating staying in the same region. Example:
- *   {'2016-02-28T00:00:00.000Z': {'br1': 123, 'br2': 256},
- *    '2016-02-29T00:00:00.000Z': {'br1': 128, 'br2': 512}}
+ *   origin admin to each destination admin. The origin and destination
+ *   admins can be the same, indicating staying in the same admin. Example:
+ *   {'2016-02-28T00:00:00.000Z': {'br-1': 123, 'br-2': 256},
+ *    '2016-02-29T00:00:00.000Z': {'br-1': 128, 'co-1': 512}}
  */
-function get_egress_mobility(country_code, origin_region_code, start_time,
-                             end_time) {
-  var conditions = {country_code: country_code,
-                    origin_region_code: origin_region_code};
+function get_egress_mobility(origin_admin_code, start_time, end_time) {
+  var conditions = {origin_admin_code: origin_admin_code};
   return get_date_condition(Mobility, conditions, start_time, end_time)
     .then(function(date_condition) {
       if (!date_condition) { return {}; }
@@ -174,7 +172,7 @@ function get_egress_mobility(country_code, origin_region_code, start_time,
           if (err) { return rej(err); }
           res(docs.reduce(function(result, mobility) {
             return my_set(result, [mobility.date.toISOString(),
-                                   mobility.destination_region_code],
+                                   mobility.destination_admin_code],
                           mobility.count);
           }, {}));
         });
@@ -188,40 +186,42 @@ function get_egress_mobility(country_code, origin_region_code, start_time,
  * @param{string} country_code - Country.
  * @param{Date} start_time - See comment near the top of this module.
  * @param{Date} end_time - See comment near the top of this module.
- * @return{Promise} Nested mapping from date to region code to population value.
+ * @return{Promise} Nested mapping from date to admin code to population value.
  *   Dates are in ISO string format. Example:
  *   {'2016-02-28T00:00:00.000Z': {'br1': 32123, 'br2': 75328},
  *    '2016-02-29T00:00:00.000Z': {'br1': 33843, 'br2': 70343}}
  */
 function get_mobility_populations(country_code, start_time, end_time) {
-  var conditions = {country_code: country_code};
+  var conditions = {origin_country_code: country_code,
+                    destination_country_code: country_code};
   return Promise.all([get_date_condition(Mobility, conditions, start_time,
                                          end_time),
-                      Region.find(conditions).select('region_code')])
-    .then(_.spread(function(date_condition, regions) {
+                      Admin.find({country_code: country_code}).select(
+                        'admin_code')])
+    .then(_.spread(function(date_condition, admins) {
       if (!date_condition) { return {}; }
       conditions.date = date_condition;
-      // For each region, find the self-migration Mobility data and add it to
-      // `result`. When all `region_promises` are fulfilled, we're done.
+      // For each admin, find the self-migration Mobility data and add it to
+      // `result`. When all `admin_promises` are fulfilled, we're done.
       var result = {};
-      var region_promises = regions.map(function(region) {
+      var admin_promises = admins.map(function(admin) {
         return new Promise(function(resolve, reject) {
-          var conditions_with_regions = _.assign(
-            {origin_region_code: region.region_code,
-             destination_region_code: region.region_code}, conditions);
-          Mobility.find(conditions_with_regions)
+          var conditions_with_admins = _.assign(
+            {origin_admin_code: admin.admin_code,
+             destination_admin_code: admin.admin_code}, conditions);
+          Mobility.find(conditions_with_admins)
             .exec(function(err, mobilities) {
               if (err) { return reject(err); }
               mobilities.forEach(function(mobility) {
                 my_set(result,
-                       [mobility.date.toISOString(), region.region_code],
+                       [mobility.date.toISOString(), admin.admin_code],
                        mobility.count);
               });
               resolve();
             });
         });
       });
-      return Promise.all(region_promises).then(function() { return result; });
+      return Promise.all(admin_promises).then(function() { return result; });
     }));
 }
 
@@ -259,9 +259,9 @@ var stopwatch = (function() {
 })();
 
 module.exports = {
-  get_regions: get_regions,
+  get_admins: get_admins,
   get_country_weather: get_country_weather,
-  get_region_weather: get_region_weather,
+  get_admin_weather: get_admin_weather,
   get_egress_mobility: get_egress_mobility,
   get_mobility_populations: get_mobility_populations,
   stopwatch: stopwatch

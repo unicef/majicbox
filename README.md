@@ -15,7 +15,7 @@ installed to use it. Check out the Mongodb installation information at:
 - `npm install`
 - **Get Azure credentials**. You should end up with a line like `export AZURE_STORAGE_ACCOUNT=zika1093 AZURE_STORAGE_ACCESS_KEY=....`. For security reasons, we don't distribute keys with the repository; ask around.
 - `node lib/blob-sync/download-from-azure.js`
-- `node lib/import/region.js -f './data/geojson/br/admin2.json' -c 'br' --verbose true`
+- `node lib/import/admin.js -f './data/geojson/br/admin2.json' -c 'br' --verbose true`
 - `node lib/import/fake.js -c 'br'`
 - `NODE_ENV=development nodemon server.js 8000`
 - browse to http://localhost:8000/api
@@ -75,4 +75,4 @@ Example for Colombia: `mkdir ./data/geojson/co`
 - Move admin2.json to data/geojson/country code.
 - From project root run the following command where -c is country code:
 
-`node lib/import/region.js -f './data/geojson/br/admin2.json' -c 'co' --verbose true`
+`node lib/import/admin.js -f './data/geojson/br/admin2.json' -c 'co' --verbose true`

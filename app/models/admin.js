@@ -4,7 +4,7 @@ var GeoJSON = require('mongoose-geojson-schema');
 // TODO(jetpack): administrative regions can change. think about the update
 // story. maybe just created/updated_at fields?
 
-var region_schema = new mongoose.Schema({
+var admin_schema = new mongoose.Schema({
   // ISO 3166-1 alpha-2 two letter country code.
   country_code: {
     type: String,
@@ -16,20 +16,18 @@ var region_schema = new mongoose.Schema({
       message: '{VALUE} is not a valid name!'
     }
   },
-  // Unique identifier for this region within the country (e.g. the 2nd part of
-  // ISO 3166-2).
-  region_code: String,
+  // Globally unique identifier for this admin. Should contain `<country_code>-` as a prefix.
+  admin_code: {type: String, index: true},
   // Human-readable name, like "São Bernardo do Campo".
   name: String,
-  // Area of the region in square kilometers.
+  population: Number,
+  // Area in square kilometers.
   geo_area_sqkm: Number,
-  // Polygon of the region.
+  // Polygon of the admin. Note: in practice, we send this data in TopoJSON format as simplified
+  // polygons instead. See `lib/import/admin.js`.
   geo_feature: GeoJSON.Feature
-  // TODO(jetpack): perhaps store a simplified polygon (or polygons?) for use
-  // when zoomed out?
-  // geo_feature_simplified: GeoJSON.Feature
 });
 
-region_schema.index({country_code: 1, region_code: 1});
+admin_schema.index({country_code: 1, admin_code: 1});
 
-module.exports = mongoose.model('Region', region_schema);
+module.exports = mongoose.model('Admin', admin_schema);
