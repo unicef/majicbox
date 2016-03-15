@@ -20,7 +20,20 @@ var admin_schema = new mongoose.Schema({
   admin_code: {type: String, index: true},
   // Human-readable name, like "São Bernardo do Campo".
   name: String,
-  population: Number,
+
+  population: {
+    type: Number,
+    required: false,
+    index: false,
+    validate: {
+      validator: function(v) {
+        return (typeof v === 'number');
+      },
+      // Value appears to be saved only if it's a number
+      // Otherwise it doesn't go through validation
+      message: '{VALUE} is not a number!'
+    }
+  },
   // Area in square kilometers.
   geo_area_sqkm: Number,
   // Polygon of the admin. Note: in practice, we send this data in TopoJSON format as simplified
