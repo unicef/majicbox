@@ -20,7 +20,7 @@ describe('Import admins', function() {
   before(function initializeDatabase() {
     return testutil.connect_and_clear_test_db()
       .then(function() {
-        return importer.import_admins(file);
+        return importer.import_admins(country_code, file);
       });
   });
 
