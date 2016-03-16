@@ -15,13 +15,13 @@ describe('Import admins', function() {
   var admin_geojson = require('./data/geojson/' +
   country_code + '/admin2.json');
 
-  var file = './test/data/geojson/' + country_code + '/admin2.json';
+  var geojson = './test/data/geojson/' + country_code + '/admin2.json';
   var population_file = 'worldpop_br.csv';
 
   before(function initializeDatabase() {
     return testutil.connect_and_clear_test_db()
       .then(function() {
-        return importer.import_admins(country_code, file, population_file);
+        return importer.import_admins(country_code, geojson, population_file);
       });
   });
 
