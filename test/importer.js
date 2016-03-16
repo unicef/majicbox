@@ -42,7 +42,7 @@ describe('Import admins', function() {
 
   describe('Admin data stored', function() {
     it('should store population and area in topojson', function(done) {
-      file = './test/static-assets/br_topo.json';
+      var file = './test/static-assets/br_topo.json';
       jsonfile.readFile(file, function(err, topojson) {
         var col = topojson.objects.collection;
         assert(col.geometries[0].properties.population);
