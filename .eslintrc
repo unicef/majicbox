@@ -11,8 +11,11 @@
     "no-else-return": 0,
     // Allow single lines.
     "brace-style": [2, "1tbs", { "allowSingleLine": true }],
-    // Weird, I thought this was the default?
-    "quotes": [2, "single"]
+    "max-len": [2, 100],
+    // I don't buy this.
+    "no-negated-condition": 0,
+    // new-cap exceptions for P.js and Q.
+    "new-cap": [2, {"capIsNewExceptions": ["P", "Q"]}]
   },
   "env": {
     // Don't warn for Mocha globals.
