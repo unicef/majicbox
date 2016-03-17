@@ -19,6 +19,20 @@ function my_set(object, path, value) {
   return _.setWith(object, path, value, Object);
 }
 
+/**
+ * Return new UTC date incremented by number of days.
+ * @param{Date} date - Starting date.
+ * @param{Number} num_days - Number of days to add. Can be negative. Should be integral.
+ * @return{Date} New date.
+ */
+function add_days(date, num_days) {
+  var result = new Date(date);
+  // Note! The `UTC` bits are important! Otherwise, this goes screwy when crossing timezones, of
+  // course.
+  result.setUTCDate(result.getUTCDate() + num_days);
+  return result;
+}
+
 // TODO(jetpack): Should these functions throw errors when there's no data?
 
 // A number of functions here take `start_time` and `end_time` parameters. The
@@ -158,8 +172,8 @@ function get_date_condition(model, conditions, start_time, end_time) {
  *   value. Dates are in ISO string format. Counts represent movement from the
  *   origin admin to each destination admin. The origin and destination
  *   admins can be the same, indicating staying in the same admin. Example:
- *   {'2016-02-28T00:00:00.000Z': {'br-1': 123, 'br-2': 256},
- *    '2016-02-29T00:00:00.000Z': {'br-1': 128, 'co-1': 512}}
+ *   {'2016-02-28T00:00:00.000Z': {'br-1': {'br-1': 123, 'br-2': 256}},
+ *    '2016-02-29T00:00:00.000Z': {'br-1': {'br-1': 128, 'co-1': 512}}}
  */
 function get_egress_mobility(origin_admin_code, start_time, end_time) {
   var conditions = {origin_admin_code: origin_admin_code};
@@ -172,6 +186,7 @@ function get_egress_mobility(origin_admin_code, start_time, end_time) {
           if (err) { return rej(err); }
           res(docs.reduce(function(result, mobility) {
             return my_set(result, [mobility.date.toISOString(),
+                                   mobility.origin_admin_code,
                                    mobility.destination_admin_code],
                           mobility.count);
           }, {}));
@@ -264,5 +279,6 @@ module.exports = {
   get_admin_weather: get_admin_weather,
   get_egress_mobility: get_egress_mobility,
   get_mobility_populations: get_mobility_populations,
+  add_days: add_days,
   stopwatch: stopwatch
 };

@@ -81,7 +81,7 @@ router.route(
     });
   });
 
-router.route('/mobility/:admin_code/:start_time?/:end_time?')
+router.route('/egress_mobility/:admin_code/:start_time?/:end_time?')
   .get(apicache('1 day'), function(req, res, next) {
     var p = req.params;
     util.get_egress_mobility(p.admin_code, date_param(p.start_time),

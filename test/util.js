@@ -412,12 +412,12 @@ describe('get_egress_mobility', function() {
       util.get_egress_mobility('mx-1', date1)
         .then(function(result) {
           assert.strictEqual(1, _.size(result));
-          testutil.assert_equal({'mx-1': 11, 'mx-2': 12}, result[date1_key]);
+          testutil.assert_equal({'mx-1': {'mx-1': 11, 'mx-2': 12}}, result[date1_key]);
         }),
       util.get_egress_mobility('mx-2', date2)
         .then(function(result) {
           assert.strictEqual(1, _.size(result));
-          testutil.assert_equal({'mx-1': 210, 'mx-2': 220}, result[date2_key]);
+          testutil.assert_equal({'mx-2': {'mx-1': 210, 'mx-2': 220}}, result[date2_key]);
         })
     ]);
   });
@@ -428,22 +428,22 @@ describe('get_egress_mobility', function() {
       util.get_egress_mobility('mx-1', date1, date2)
         .then(function(result) {
           assert.strictEqual(2, _.size(result));
-          testutil.assert_equal({'mx-1': 11, 'mx-2': 12}, result[date1_key]);
-          testutil.assert_equal({'mx-2': 120}, result[date2_key]);
+          testutil.assert_equal({'mx-1': {'mx-1': 11, 'mx-2': 12}}, result[date1_key]);
+          testutil.assert_equal({'mx-1': {'mx-2': 120}}, result[date2_key]);
         }),
       // Return data for all dates when given range is larger.
       util.get_egress_mobility('mx-2', new Date('1999-01-01'),
                                new Date('3000-12-31'))
         .then(function(result) {
           assert.strictEqual(2, _.size(result));
-          testutil.assert_equal({'mx-1': 21}, result[date1_key]);
-          testutil.assert_equal({'mx-1': 210, 'mx-2': 220}, result[date2_key]);
+          testutil.assert_equal({'mx-2': {'mx-1': 21}}, result[date1_key]);
+          testutil.assert_equal({'mx-2': {'mx-1': 210, 'mx-2': 220}}, result[date2_key]);
         }),
       // Return data for just date1 when range excludes date2.
       util.get_egress_mobility('mx-1', new Date('1999-01-01'), date1)
         .then(function(result) {
           assert.strictEqual(1, _.size(result));
-          testutil.assert_equal({'mx-1': 11, 'mx-2': 12}, result[date1_key]);
+          testutil.assert_equal({'mx-1': {'mx-1': 11, 'mx-2': 12}}, result[date1_key]);
         })
     ]);
   });
@@ -452,11 +452,11 @@ describe('get_egress_mobility', function() {
     return Promise.all([
       util.get_egress_mobility('mx-1').then(function(result) {
         assert.strictEqual(1, _.size(result));
-        testutil.assert_equal({'mx-2': 120}, result[date2_key]);
+        testutil.assert_equal({'mx-1': {'mx-2': 120}}, result[date2_key]);
       }),
       util.get_egress_mobility('mx-2').then(function(result) {
         assert.strictEqual(1, _.size(result));
-        testutil.assert_equal({'mx-1': 210, 'mx-2': 220}, result[date2_key]);
+        testutil.assert_equal({'mx-2': {'mx-1': 210, 'mx-2': 220}}, result[date2_key]);
       })
     ]);
   });
