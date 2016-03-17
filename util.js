@@ -158,8 +158,8 @@ function get_date_condition(model, conditions, start_time, end_time) {
  *   value. Dates are in ISO string format. Counts represent movement from the
  *   origin admin to each destination admin. The origin and destination
  *   admins can be the same, indicating staying in the same admin. Example:
- *   {'2016-02-28T00:00:00.000Z': {'br-1': 123, 'br-2': 256},
- *    '2016-02-29T00:00:00.000Z': {'br-1': 128, 'co-1': 512}}
+ *   {'2016-02-28T00:00:00.000Z': {'br-1': {'br-1': 123, 'br-2': 256}},
+ *    '2016-02-29T00:00:00.000Z': {'br-1': {'br-1': 128, 'co-1': 512}}}
  */
 function get_egress_mobility(origin_admin_code, start_time, end_time) {
   var conditions = {origin_admin_code: origin_admin_code};
@@ -172,6 +172,7 @@ function get_egress_mobility(origin_admin_code, start_time, end_time) {
           if (err) { return rej(err); }
           res(docs.reduce(function(result, mobility) {
             return my_set(result, [mobility.date.toISOString(),
+                                   mobility.origin_admin_code,
                                    mobility.destination_admin_code],
                           mobility.count);
           }, {}));
