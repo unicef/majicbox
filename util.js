@@ -19,6 +19,20 @@ function my_set(object, path, value) {
   return _.setWith(object, path, value, Object);
 }
 
+/**
+ * Return new UTC date incremented by number of days.
+ * @param{Date} date - Starting date.
+ * @param{Number} num_days - Number of days to add. Can be negative. Should be integral.
+ * @return{Date} New date.
+ */
+function add_days(date, num_days) {
+  var result = new Date(date);
+  // Note! The `UTC` bits are important! Otherwise, this goes screwy when crossing timezones, of
+  // course.
+  result.setUTCDate(result.getUTCDate() + num_days);
+  return result;
+}
+
 // TODO(jetpack): Should these functions throw errors when there's no data?
 
 // A number of functions here take `start_time` and `end_time` parameters. The
@@ -265,5 +279,6 @@ module.exports = {
   get_admin_weather: get_admin_weather,
   get_egress_mobility: get_egress_mobility,
   get_mobility_populations: get_mobility_populations,
+  add_days: add_days,
   stopwatch: stopwatch
 };
