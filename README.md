@@ -1,3 +1,5 @@
+![image](https://travis-ci.org/unicef/majicbox.svg?branch=master Travis CI build status)
+
 # Setup for developers
 
 ## The Database
