@@ -1,0 +1,12 @@
+sudo: required
+
+language: javascript
+
+services:
+  - docker
+
+before_install:
+  - docker-compose build unit-tests
+
+script:
+  - docker-compose run --rm unit-tests
