@@ -15,7 +15,7 @@ installed to use it. Check out the Mongodb installation information at:
 - `npm install`
 - **Get Azure credentials**. You should end up with a line like `export AZURE_STORAGE_ACCOUNT=zika1093 AZURE_STORAGE_ACCESS_KEY=....`. For security reasons, we don't distribute keys with the repository; ask around.
 - `node lib/blob-sync/download-from-azure.js`
-- `node lib/import/admin.js -c 'br' --verbose true`
+- `for i in br co pa; do node lib/import/admin.js -c $i --verbose true; node lib/import/fake_weather.js -c $i -n 30; done`
 - `node lib/import/fake_weather.js -c 'br' -n 60`
 - `node lib/import/mobility.js -c 'br'`
 - `NODE_ENV=development nodemon server.js 8000`
