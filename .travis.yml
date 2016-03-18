@@ -1,6 +1,7 @@
+# bumping this file (testing)
 sudo: required
 
-language: javascript
+language: node_js
 
 services:
   - docker
