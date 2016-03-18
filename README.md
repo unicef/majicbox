@@ -17,6 +17,7 @@ installed to use it. Check out the Mongodb installation information at:
 - `node lib/blob-sync/download-from-azure.js`
 - `node lib/import/admin.js -c 'br' --verbose true`
 - `node lib/import/fake_weather.js -c 'br' -n 60`
+- `node lib/import/mobility.js -c 'br'`
 - `NODE_ENV=development nodemon server.js 8000`
 - browse to http://localhost:8000/api
 
