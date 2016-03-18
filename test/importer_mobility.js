@@ -6,7 +6,7 @@ var Mobility = require('../app/models/mobility');
 var importer = require('../lib/import/mobility');
 var testutil = require('./testutil');
 
-var test_migrations_dir = './test/data/mobility/br/';
+var test_migrations_dir = './test/data/mobility/br';
 var test_migrations_csv_filename = 'sample_mobility_matrix.csv';
 
 var country_code = 'br';
@@ -32,7 +32,10 @@ describe('Import mobility', function() {
         var count = 0;
         csv.fromPath(test_migrations_dir + '/' + test_migrations_csv_filename)
         .on('data', function(data) {
-          var origin_admin_code = data[1];
+          // country_code was added to admin ids during mobility import.
+          // Prepend country code to origin admin id
+          var origin_admin_code = country_code + '-' + data[1];
+
           var promise = new Promise(function(resolve) {
             // Get first mobility record (starts on the second line after row headers)
             if (count === 1) {
