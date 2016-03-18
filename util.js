@@ -80,13 +80,25 @@ function get_country_weather(country_code, date) {
       if (!latest_date) { return {}; }
       conditions.date = latest_date;
       return Weather.find(conditions)
+        .lean(true)
         .select('admin_code data')
         .then(function(docs) {
-          return docs.reduce(function(result, doc) {
-            return my_set(result,
-                          [latest_date.toISOString(), doc.admin_code],
-                          doc.data.toObject());
-          }, {});
+          // currently, we return nil results, instead of the requested date
+          // to an empty result dict. up for reconsideration.
+          if (docs.length === 0) {
+            return {};
+          }
+
+          // optimization: build up the country code --> weather dict
+          // first, then stick it in a single-key dictionary.
+          var result_for_date = {};
+          _.forEach(docs, function(d) {
+            result_for_date[d.admin_code] = d.data;
+          });
+
+          return _.fromPairs([
+            [latest_date.toISOString(), result_for_date]
+          ]);
         });
     });
 }
