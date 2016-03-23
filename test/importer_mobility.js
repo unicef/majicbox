@@ -29,32 +29,27 @@ describe('Import mobility', function() {
       'should store origin',
       function(done) {
         var all_done = [];
-        var count = 0;
-        csv.fromPath(test_migrations_dir + '/' + test_migrations_csv_filename)
+        csv.fromPath(
+          test_migrations_dir + '/' + test_migrations_csv_filename,
+          {headers: true}
+        )
         .on('data', function(data) {
           // country_code was added to admin ids during mobility import.
           // Prepend country code to origin admin id
-          var origin_admin_code = country_code + '-' + data[1];
-
+          var origin_admin_code = country_code + '-' + data.ORIGIN;
           var promise = new Promise(function(resolve) {
-            // Get first mobility record (starts on the second line after row headers)
-            if (count === 1) {
-              Mobility.find({
-                origin_admin_code: origin_admin_code
-              }, function(err, records) {
-                assert.ifError(err, 'error finding record');
-                assert.strictEqual(
-                  origin_admin_code,
-                  records[0].origin_admin_code
-                );
-                resolve();
-              });
-            }
-            count += 1;
+            Mobility.find({
+              origin_admin_code: origin_admin_code
+            }, function(err, records) {
+              assert.ifError(err, 'error finding record');
+              assert.strictEqual(
+                origin_admin_code,
+                records[0].origin_admin_code
+              );
+              resolve();
+            });
           });
-          if (count === 2) {
-            all_done.push(promise);
-          }
+          all_done.push(promise);
         })
         .on('end', function() {
           Promise.all(all_done).then(function() {
