@@ -9,6 +9,7 @@ var jsonfile = require('jsonfile');
 var mongoose = require('mongoose');
 var morgan = require('morgan');
 
+var RegionTopojson = require('./app/models/region-topojson.js');
 var config = require('./config');
 var util = require('./util');
 
@@ -70,14 +71,12 @@ router.route(
 
 router.route(
   '/admin_polygons_topojson/:country_code')
-  .get(apicache('1 day'), function(req, res) {
-    var file = './data/static-assets/' + req.params.country_code + '_topo.json';
-    jsonfile.readFile(file, function(err, topojson) {
-      if (err) {
-        console.error(err);
-        res.json(err);
-      }
-      res.json(topojson);
+  .get(apicache('1 day'), function(req, res, next) {
+    RegionTopojson.findOne({
+      country_code: req.params.country_code,
+      simplification: 0.4
+    }).lean(true).exec(function(err, topojson_result) {
+      return err ? next(err) : res.json(topojson_result.topojson);
     });
   });
 
