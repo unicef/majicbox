@@ -1,5 +1,4 @@
 var mongoose = require('mongoose');
-var GeoJSON = require('mongoose-geojson-schema');
 
 // TODO(jetpack): administrative regions can change. think about the update
 // story. maybe just created/updated_at fields?

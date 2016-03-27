@@ -11,3 +11,4 @@ before_install:
 
 script:
   - docker-compose run --rm unit-tests
+  - docker-compose run --rm unit-tests ./node_modules/eslint/bin/eslint.js .

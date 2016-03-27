@@ -27,7 +27,7 @@
     "topojson": "^1.6.24"
   },
   "devDependencies": {
-    "eslint": "^2.2.0",
+    "eslint": "^2.5.1",
     "eslint-config-google": "^0.4.0",
     "eslint-config-xo": "^0.11.0"
   },
