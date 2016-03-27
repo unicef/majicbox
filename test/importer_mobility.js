@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var assert = require('chai').assert;
 var csv = require('fast-csv');
 var mongoose = require('mongoose');
@@ -16,6 +17,14 @@ describe('Import mobility', function() {
     return testutil.connect_and_clear_test_db()
       .then(function() {
         return importer.import_mobility(test_migrations_dir, country_code);
+      })
+      .then(function(errors_by_file) {
+        // We have an intentional error in the test migrations file.
+        assert.strictEqual(1, _.size(errors_by_file));
+        assert.strictEqual(1, _.size(errors_by_file[test_migrations_csv_filename]));
+        assert.strictEqual(
+          'invalid row: {"DATE":"20150201","ORIGIN":"4343","DESTINATION":"","COUNT":"7"}',
+          errors_by_file[test_migrations_csv_filename][0]);
       });
   });
 
