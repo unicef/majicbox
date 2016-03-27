@@ -3,7 +3,7 @@ var mongoose = require('mongoose');
 // TODO(jetpack): administrative regions can change. think about the update
 // story. maybe just created/updated_at fields?
 
-var region_topojson_schema = new mongoose.Schema({
+var admin_topojson_schema = new mongoose.Schema({
   // ISO 3166-1 alpha-2 two letter country code.
   country_code: {
     type: String,
@@ -35,6 +35,6 @@ var region_topojson_schema = new mongoose.Schema({
   }
 });
 
-region_topojson_schema.index({country_code: 1, simplification: 1});
+admin_topojson_schema.index({country_code: 1, simplification: 1}, {unique: true});
 
-module.exports = mongoose.model('RegionTopojson', region_topojson_schema);
+module.exports = mongoose.model('AdminTopojson', admin_topojson_schema);

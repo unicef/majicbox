@@ -9,7 +9,7 @@ var express = require('express');
 var mongoose = require('mongoose');
 var morgan = require('morgan');
 
-var RegionTopojson = require('./app/models/region-topojson.js');
+var AdminTopojson = require('./app/models/admin-topojson.js');
 var config = require('./config');
 var util = require('./util');
 var http = require('http');
@@ -66,7 +66,7 @@ router.route(
 router.route(
   '/admin_polygons_topojson/:country_code')
   .get(apicache('1 day'), function(req, res, next) {
-    RegionTopojson.findOne({
+    AdminTopojson.findOne({
       country_code: req.params.country_code,
       simplification: 0.4
     }).lean(true).exec(function(err, topojson_result) {

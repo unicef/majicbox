@@ -2,7 +2,7 @@ var assert = require('chai').assert;
 var mongoose = require('mongoose');
 
 var Admin = require('../app/models/admin');
-var RegionTopojson = require('../app/models/region-topojson.js');
+var AdminTopojson = require('../app/models/admin-topojson.js');
 var importer = require('../lib/import/admin');
 var testutil = require('./testutil');
 
@@ -28,7 +28,7 @@ describe('Import admins', function() {
 
   describe('Admin data stored', function() {
     it('should store population and area in topojson', function(done) {
-      RegionTopojson.findOne(
+      AdminTopojson.findOne(
         {country_code: country_code},
         function(err, region_topojson) {
           if (err) {

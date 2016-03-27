@@ -5,11 +5,11 @@
 var assert = require('assert');
 var testutil = require('../testutil');
 var mongoose = require('mongoose');
-var RegionTopojson = require('../../app/models/region-topojson.js');
+var AdminTopojson = require('../../app/models/admin-topojson.js');
 
 var insert_many = function(data) {
   return new Promise(function(resolve, reject) {
-    RegionTopojson.insertMany(data, function(err) {
+    AdminTopojson.insertMany(data, function(err) {
       return err ? reject(err) : resolve(err);
     });
   });
