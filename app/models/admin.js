@@ -41,6 +41,6 @@ var admin_schema = new mongoose.Schema({
   geo_feature: GeoJSON.Feature
 });
 
-admin_schema.index({country_code: 1, admin_code: 1});
+admin_schema.index({country_code: 1, admin_code: 1}, {unique: true});
 
 module.exports = mongoose.model('Admin', admin_schema);

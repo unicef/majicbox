@@ -4,6 +4,7 @@ var jsonfile = require('jsonfile');
 var mongoose = require('mongoose');
 
 var Admin = require('../app/models/admin');
+var RegionTopojson = require('../app/models/region-topojson.js');
 var importer = require('../lib/import/admin');
 var testutil = require('./testutil');
 
@@ -42,14 +43,18 @@ describe('Import admins', function() {
 
   describe('Admin data stored', function() {
     it('should store population and area in topojson', function(done) {
-      var file = './test/static-assets/br_topo.json';
-      jsonfile.readFile(file, function(err, topojson) {
-        var col = topojson.objects.collection;
-        assert(col.geometries[0].properties.population);
-        assert(col.geometries[0].properties.geo_area_sqkm);
-        assert.ifError(err);
-        done();
-      });
+      RegionTopojson.findOne(
+        {country_code: country_code},
+        function(err, region_topojson) {
+          if (err) {
+            return done(err);
+          }
+          var col = region_topojson.topojson.objects.collection;
+          assert(col.geometries[0].properties.population);
+          assert(col.geometries[0].properties.geo_area_sqkm);
+          done();
+        }
+      );
     });
 
     it('should store name', function(done) {
