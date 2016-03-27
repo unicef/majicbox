@@ -35,10 +35,7 @@ var admin_schema = new mongoose.Schema({
     }
   },
   // Area in square kilometers.
-  geo_area_sqkm: Number,
-  // Polygon of the admin. Note: in practice, we send this data in TopoJSON format as simplified
-  // polygons instead. See `lib/import/admin.js`.
-  geo_feature: GeoJSON.Feature
+  geo_area_sqkm: Number
 });
 
 admin_schema.index({country_code: 1, admin_code: 1}, {unique: true});

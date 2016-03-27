@@ -25,13 +25,6 @@ app.use(bodyParser.json());
 /* eslint new-cap: [2, {"capIsNewExceptions": ["express.Router"]}] */
 var router = express.Router(); // get an instance of the express Router
 
-router.route('/admins/:country_code')
-  .get(apicache('1 day'), function(req, res, next) {
-    util.get_admins(req.params.country_code)
-      .then(res.json.bind(res))
-      .catch(next);
-  });
-
 /**
  * Convert date string into either a valid Date or null.
  *

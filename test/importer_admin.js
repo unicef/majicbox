@@ -37,6 +37,8 @@ describe('Import admins', function() {
           var col = region_topojson.topojson.objects.collection;
           assert(col.geometries[0].properties.population);
           assert(col.geometries[0].properties.geo_area_sqkm);
+          var expected_area = 1595;
+          assert(Math.abs(col.geometries[0].properties.geo_area_sqkm - expected_area) < 10);
           done();
         }
       );
@@ -57,7 +59,6 @@ describe('Import admins', function() {
               assert(admin.name, 'name has not been set!');
               assert(admin.geo_area_sqkm, 'geo_area_sqkm has not been set!');
               assert(admin.population, 'population has not been set!');
-              assert(admin.geo_feature, 'geo_feature has not been set!');
               resolve();
             });
         });

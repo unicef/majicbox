@@ -9,6 +9,10 @@ var util = require('../util');
 
 var testutil = require('./testutil');
 
+/*
+
+TODO(zora): Move this to a model test.
+
 describe('get_admins', function() {
   var country_code = 'br';
   var geo_features = [
@@ -73,6 +77,7 @@ describe('get_admins', function() {
       });
   });
 });
+ */
 
 describe('Weather functions', function() {
   var country_code = 'br';
