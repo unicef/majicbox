@@ -5,7 +5,6 @@ var apicache = require('apicache').options({debug: true}).middleware;
 var bodyParser = require('body-parser');
 var compression = require('compression');
 var express = require('express');
-var jsonfile = require('jsonfile');
 var mongoose = require('mongoose');
 var morgan = require('morgan');
 

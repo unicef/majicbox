@@ -1,6 +1,4 @@
 var assert = require('chai').assert;
-var fs = require('fs');
-var jsonfile = require('jsonfile');
 var mongoose = require('mongoose');
 
 var Admin = require('../app/models/admin');
@@ -8,9 +6,7 @@ var RegionTopojson = require('../app/models/region-topojson.js');
 var importer = require('../lib/import/admin');
 var testutil = require('./testutil');
 
-var topo_dir = './test/static-assets/';
 var country_code = 'br';
-var topo_file = country_code + '_topo.json';
 
 describe('Import admins', function() {
   var admin_geojson = require('./data/geojson/' +
@@ -27,18 +23,7 @@ describe('Import admins', function() {
   });
 
   after(function(done) {
-    // Remove test topo file and dir
-    fs.unlink(topo_dir + '/' + topo_file, function(err) {
-      new Promise(function(resolve, reject) {
-        if (err) { return reject(err);}
-        fs.rmdir(topo_dir, function(err) {
-          if (err) { console.log(err);}
-          resolve();
-        });
-      })
-      .then(mongoose.disconnect(done))
-      .catch(function(err) {throw (err);});
-    });
+    mongoose.disconnect(done);
   });
 
   describe('Admin data stored', function() {
