@@ -1,7 +1,8 @@
 // Main entrypoint for the majicbox server: defines the API endpoints and starts
 // the Express server.
 
-var apicache = require('apicache').options({debug: true}).middleware;
+var _ = require('lodash');
+var apicache = require('apicache').options({debug: false}).middleware;
 var bodyParser = require('body-parser');
 var compression = require('compression');
 var express = require('express');
@@ -11,6 +12,7 @@ var morgan = require('morgan');
 var RegionTopojson = require('./app/models/region-topojson.js');
 var config = require('./config');
 var util = require('./util');
+var http = require('http');
 
 var app = express();
 
@@ -93,7 +95,17 @@ router.route('/mobility_populations/:country_code/:start_time?/:end_time?')
 // All of our routes will be prefixed with '/api'.
 app.use('/api', router);
 
-mongoose.connect(config.database);
-app.listen(config.port);
 console.log('Connecting to DB', config.database);
-console.log('Magic happens on', config.port);
+mongoose.connect(config.database);
+app.listen(config.port, '0.0.0.0', 511, function() {
+  console.log('Magic happens on', config.port);
+
+  // run some warming
+  var warm = function(d) {
+    return http.get(_.assign({hostname: 'localhost', port: config.port}, d));
+  };
+  _.forEach(['br', 'co', 'pa'], function(country_code) {
+    warm({path: '/api/admin_polygons_topojson/' + country_code});
+    warm({path: '/api/country_weather/' + country_code});
+  });
+});
