@@ -7,7 +7,6 @@ var admin_topojson_schema = new mongoose.Schema({
   // ISO 3166-1 alpha-2 two letter country code.
   country_code: {
     type: String,
-    index: true,
     validate: {
       validator: function(v) {
         return /[a-z]{2}/.test(v);
@@ -19,8 +18,7 @@ var admin_topojson_schema = new mongoose.Schema({
   // Retention percentage that was given to topojson.simplify() call.
   simplification: {
     type: Number,
-    required: true,
-    index: true
+    required: true
   },
 
   // TopoJSON object of interest.
