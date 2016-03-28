@@ -44,26 +44,6 @@ function add_days(date, num_days) {
 // * It's invalid for only end_time to be specified.
 
 /**
- * Return all admins for the country.
- *
- * @param{string} country_code - Country.
- * @return{Promise} Array of Admin objects with properties `admin_code`,
- *   `name`, `geo_area_sqkm`, and `geo_feature`.
-*/
-function get_admins(country_code) {
-  return Admin.find({country_code: country_code})
-    .select('admin_code name geo_area_sqkm geo_feature')
-    .then(function(admins) {
-      return admins.map(function(admin) {
-        var result = _.pick(admin, ['admin_code', 'name', 'geo_area_sqkm']);
-        // Strip off extra Mongoose document stuff from geo_feature subdocument.
-        result.geo_feature = admin.geo_feature.toObject();
-        return result;
-      });
-    });
-}
-
-/**
  * Return weather data for all admins for the country.
  *
  * @param{string} country_code - Country.
@@ -286,7 +266,6 @@ var stopwatch = (function() {
 })();
 
 module.exports = {
-  get_admins: get_admins,
   get_country_weather: get_country_weather,
   get_admin_weather: get_admin_weather,
   get_egress_mobility: get_egress_mobility,

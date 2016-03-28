@@ -1,16 +1,18 @@
 // Main entrypoint for the majicbox server: defines the API endpoints and starts
 // the Express server.
 
-var apicache = require('apicache').options({debug: true}).middleware;
+var _ = require('lodash');
+var apicache = require('apicache').options({debug: false}).middleware;
 var bodyParser = require('body-parser');
 var compression = require('compression');
 var express = require('express');
-var jsonfile = require('jsonfile');
 var mongoose = require('mongoose');
 var morgan = require('morgan');
 
+var AdminTopojson = require('./app/models/admin-topojson.js');
 var config = require('./config');
 var util = require('./util');
+var http = require('http');
 
 var app = express();
 
@@ -24,13 +26,6 @@ app.use(bodyParser.json());
 
 /* eslint new-cap: [2, {"capIsNewExceptions": ["express.Router"]}] */
 var router = express.Router(); // get an instance of the express Router
-
-router.route('/admins/:country_code')
-  .get(apicache('1 day'), function(req, res, next) {
-    util.get_admins(req.params.country_code)
-      .then(res.json.bind(res))
-      .catch(next);
-  });
 
 /**
  * Convert date string into either a valid Date or null.
@@ -70,14 +65,12 @@ router.route(
 
 router.route(
   '/admin_polygons_topojson/:country_code')
-  .get(apicache('1 day'), function(req, res) {
-    var file = './data/static-assets/' + req.params.country_code + '_topo.json';
-    jsonfile.readFile(file, function(err, topojson) {
-      if (err) {
-        console.error(err);
-        res.json(err);
-      }
-      res.json(topojson);
+  .get(apicache('1 day'), function(req, res, next) {
+    AdminTopojson.findOne({
+      country_code: req.params.country_code,
+      simplification: 0.4
+    }).lean(true).exec(function(err, topojson_result) {
+      return err ? next(err) : res.json(topojson_result.topojson);
     });
   });
 
@@ -102,7 +95,17 @@ router.route('/mobility_populations/:country_code/:start_time?/:end_time?')
 // All of our routes will be prefixed with '/api'.
 app.use('/api', router);
 
-mongoose.connect(config.database);
-app.listen(config.port);
 console.log('Connecting to DB', config.database);
-console.log('Magic happens on', config.port);
+mongoose.connect(config.database);
+app.listen(config.port, function() {
+  console.log('Magic happens on', config.port);
+
+  // run some warming
+  var warm = function(d) {
+    return http.get(_.assign({hostname: 'localhost', port: config.port}, d));
+  };
+  _.forEach(['br', 'co', 'pa'], function(country_code) {
+    warm({path: '/api/admin_polygons_topojson/' + country_code});
+    warm({path: '/api/country_weather/' + country_code});
+  });
+});

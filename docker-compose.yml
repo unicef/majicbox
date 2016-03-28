@@ -10,7 +10,7 @@ majicbox:
 
 unit-tests:
     build: .
-    command: ./node_modules/mocha/bin/mocha test
+    command: ./node_modules/mocha/bin/mocha --recursive test
     environment:
         - "TEST_DB=mongodb://mongo/test"
     links:
