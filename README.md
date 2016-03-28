@@ -15,14 +15,15 @@ installed to use it. Check out the Mongodb installation information at:
 - `git clone git@github.com:mikefab/majicbox.git`
 - `cd majicbox`
 - `npm install`
-- **Get Azure credentials**. You should end up with a line like `export AZURE_STORAGE_ACCOUNT=zika1093 AZURE_STORAGE_ACCESS_KEY=....`. For security reasons, we don't distribute keys with the repository; ask around.
-- `node lib/blob-sync/download-from-azure.js`
-- `for i in br co pa; do node lib/import/admin.js -c $i --verbose true; node lib/import/fake_weather.js -c $i -n 30; done`
-- `node lib/import/fake_weather.js -c 'br' -n 60`
+- `make setup-dev-data`
 - `node lib/import/mobility.js -c 'br'`
 - `NODE_ENV=development nodemon server.js 8000`
 - browse to http://localhost:8000/api
 
+Deprecated:
+
+- **Get Azure credentials**. You should end up with a line like `export AZURE_STORAGE_ACCOUNT=zika1093 AZURE_STORAGE_ACCESS_KEY=....`. For security reasons, we don't distribute keys with the repository; ask around.
+- `node lib/blob-sync/download-from-azure.js`
 
 ## Workflow and guidelines
 
@@ -40,7 +41,9 @@ installed to use it. Check out the Mongodb installation information at:
 Before submitting any code, one should run:
 
 * `mocha` to ensure all tests pass.
-* `make lint` for style guide and other checks.
+* `make lint` for style checks.
+
+It's a little slower (container overhead) but you can run `make lint utest-in-docker` to run the same commands as Travis CI. This should eliminate any local state you may have hanging around. We now have checks on every pull request, which is great because we should never have our `master` branch breaking tests.
 
 ## Linting
 
