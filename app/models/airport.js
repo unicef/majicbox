@@ -40,6 +40,6 @@ var airport_schema = new mongoose.Schema({
   }
 });
 
-airport_schema.index({country_code: 1, admin_code: 1, airport_code: 1, fcode: 1 }, {unique: true});
+airport_schema.index({country_code: 1, admin_code: 1, airport_code: 1, fcode: 1}, {unique: true});
 
 module.exports = mongoose.model('Airport', airport_schema);
