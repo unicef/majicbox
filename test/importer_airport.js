@@ -24,8 +24,16 @@ describe('Import airports', function() {
   });
 
   describe('Airport data stored', function() {
+    it('should not store duplicates', function() {
+      Airport.count({}, function(err, c) {
+        if (err) { console.log(err); }
+        assert.strictEqual(1, c);
+      });
+    });
+
     it('should store name', function(done) {
       var all_done = [];
+
       airport_geojson.features.forEach(function(feature) {
         var admin_code = String(feature.properties.adm2_code);
         var promise = new Promise(function(resolve) {
