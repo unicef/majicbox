@@ -53,6 +53,59 @@
         "gtopo30":838,
         "wac_name":"Brazil"
       }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Feature",
+        "coordinates": [-45.9995565,-22.240378]
+      },
+      "properties": {
+        "faa_code":"",
+        "fclass":"P",
+        "adm2_code":3152501,
+        "wiki_link":"http://en.wikipedia.org/wiki/Pouso_Alegre",
+        "adm1_code":15,
+        "envelope_id":"",
+        "country_name":"Brazil",
+        "adm1_name_ascii":"Minas Gerais",
+        "asciiname":"Pouso Alegre",
+        "cc2":"",
+        "is_geonames":"Y",
+        "gmt_offset":-2.0,
+        "adm2_name_ascii":"Pouso Alegre",
+        "country_code":"BR",
+        "city_code_list":"PPY",
+        "geoname_id":3452525,
+        "wac":316,
+        "continent_name":"South America",
+        "city_detail_list":"PPY|3452525|Pouso Alegre|Pouso Alegre",
+        "adm2_name_utf":"Pouso Alegre",
+        "iata_code":"PPY",
+        "tvl_por_list":"PPY",
+        "date_until":"",
+        "city_name_list":"Pouso Alegre",
+        "state_code":"MG",
+        "population":115201,
+        "location_type":"C",
+        "timezone":"America/Sao_Paulo",
+        "adm1_name_utf":"Minas Gerais",
+        "icao_code":"",
+        "raw_offset":-3.0,
+        "dst_offset":-3.0,
+        "page_rank":"",
+        "adm3_code":"",
+        "alt_name_section":"ru|Позу-Алегри|=bg|Пузу Алегри|=bpy|পাউসো আলেগ্রে|=kk|Позу-Алегри|=th|โปซูอาเลกรี|=zh|波苏阿莱格里|",
+        "comment":"",
+        "date_from":"",
+        "name":"Pouso Alegre",
+        "moddate":"2012-08-03",
+        "elevation":"",
+        "fcode":"PPL",
+        "adm4_code":"",
+        "gtopo30":838,
+        "wac_name":"Brazil"
+      }
     }
   ]
 }
