@@ -74,12 +74,15 @@ router.route(
     });
   });
 
-router.route('/egress_mobility/:admin_code/:start_time?/:end_time?')
-  .get(apicache('1 day'), function(req, res, next) {
-    var p = req.params;
-    util.get_egress_mobility(p.admin_code, date_param(p.start_time),
-                             date_param(p.end_time))
-      .then(res.json.bind(res))
+router.route('/mobility')
+  .get(function(req, res, next) {
+    var p = req.query;
+    util.get_egress_mobility(p.origin.admin_code, date_param(p.time_frame.start_date),
+                             date_param(p.time_frame.end_date))
+      .then(result => {
+        console.log('0708080909090909090909090909', result)
+        return res.json.bind(res)(result)
+      })
       .catch(next);
   });
 

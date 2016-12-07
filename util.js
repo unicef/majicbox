@@ -136,7 +136,8 @@ function get_admin_weather(admin_code, start_time, end_time) {
  */
 function get_date_condition(model, conditions, start_time, end_time) {
   if (start_time && end_time) {
-    return Promise.resolve({$gte: start_time, $lte: end_time});
+    end_time.setDate(start_time.getDate() + 1);
+    return Promise.resolve({$gte: start_time, $lt: end_time});
   } else if (start_time) {
     return Promise.resolve(start_time);
   } else {
@@ -168,12 +169,15 @@ function get_date_condition(model, conditions, start_time, end_time) {
  *    '2016-02-29T00:00:00.000Z': {'br-1': {'br-1': 128, 'co-1': 512}}}
  */
 function get_egress_mobility(origin_admin_code, start_time, end_time) {
+  console.log('(((((((((((((((((())))))))))))))))))', origin_admin_code, start_time, end_time)
   var conditions = {origin_admin_code: origin_admin_code};
   return get_date_condition(Mobility, conditions, start_time, end_time)
     .then(function(date_condition) {
       if (!date_condition) { return {}; }
       conditions.date = date_condition;
       return new Promise(function(res, rej) {
+
+        console.log('KJDKJDKJDKJFDKJFKDJAKDJFAF get_date_condition', conditions)
         Mobility.find(conditions).exec(function(err, docs) {
           if (err) { return rej(err); }
           res(docs.reduce(function(result, mobility) {

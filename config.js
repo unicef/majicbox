@@ -14,5 +14,5 @@ module.exports = {
   port: process_env_or('PORT', 8000),
   database: process_env_or(['PROD_DB', 'MONGOHQ_URL'],
                            'mongodb://localhost/majicbox'),
-  testdb: process_env_or('TEST_DB', 'mongodb://localhost/test')
+  testdb: process_env_or('TEST_DB', 'mongodb://localhost/carrotjuice')
 };
