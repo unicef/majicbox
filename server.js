@@ -13,6 +13,7 @@ var AdminTopojson = require('./app/models/admin-topojson.js');
 var config = require('./config');
 var util = require('./util');
 var http = require('http');
+var TwitterActivity = require('./handlers/twitter-activity/')
 
 var app = express();
 
@@ -44,6 +45,9 @@ function date_param(date_string) {
 // ranges [2016-01-01, 2016-12-31] and [2016-01-01, 2017-01-01] will return
 // nearly identical data, but be stored separately. We should instead use a
 // cache directly in the underlying functions.
+
+router.route('/twitter-activity').post(TwitterActivity.PostTweet)
+router.route('/twitter-activity').get(TwitterActivity.GetTweets)
 
 router.route('/country_weather/:country_code/:time?')
   .get(apicache('1 day'), function(req, res, next) {
