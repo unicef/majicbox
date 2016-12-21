@@ -43,7 +43,7 @@ export default function PostTweet(req, res) {
 			ActivityModel({
 				country_code,
 				local_day: date.format('DD/MM/YY'),
-				tweets_ids: [tweet.tweet_id],
+				tweets_ids: [tweet.id],
 				hours,
 				admin_id: tweet.admin_id
 			}).save(handler);
@@ -58,8 +58,14 @@ export default function PostTweet(req, res) {
 		//
 		// 	return;
 		// }
+		console.log(`Counting ${tweet.id},,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`)
+		if (day.tweets_ids.indexOf(tweet.id) !== -1) {
+			handler({ msg: `Tweet ${tweet.id} has been counted ${day.tweets_ids}`})
+			return
+		}
 		day.hours = day.hours.map((count, idx) => idx === date.hours() ? count + 1 : count)
-		day.tweets_ids = [...day.tweets_ids, tweet.tweet_id]
+		console.log(`We've counted ${day.tweets_ids.length}, is In there ${day.tweets_ids.indexOf(tweet.id)}`)
+		day.tweets_ids = [...day.tweets_ids, tweet.id]
 		day.save(handler)
 	})
 
