@@ -1,6 +1,6 @@
 import range from 'lodash/range'
-var ActivityModel = require('../../app/models/twitter-activity');
-var moment = require('moment');
+import Activity from '../../models/activity';
+import moment from 'moment'
 
 function extractAdminInfo(admin_id) {
 	const tokens = admin_id.split('_')
@@ -32,20 +32,24 @@ export default function PostTweet(req, res) {
 	const date = moment(tweet.local_time, 'x');
 	const criteria = {
 		country_code,
-		admin_id: tweet.admin_id,
-		local_day: date.format('DD/MM/YY')
+		admin_code: tweet.admin_id,
+		date: date
 	};
 
-	ActivityModel.findOne(criteria, function(err, day = null) {
+	Activity.findOne(criteria, function(err, day = null) {
 		if (day === null) {
-			const hours = range(23).map(() => 0)
-			hours[date.hours()] = 1
-			ActivityModel({
+			const counts = range(23).map(() => 0)
+			counts[date.hours()] = 1
+			Activity({
 				country_code,
-				local_day: date.format('DD/MM/YY'),
-				tweets_ids: [tweet.id],
-				hours,
-				admin_id: tweet.admin_id
+				date: date,
+				frequency: 'daily',
+				key_ids: [tweet.id],
+				counts,
+				admin_code: tweet.admin_id,
+				data_source: 'twitter',
+				crawler: tweet.crawler || 'N/A',
+				type: 'tweets'
 			}).save(handler);
 
 			return;
@@ -58,14 +62,12 @@ export default function PostTweet(req, res) {
 		//
 		// 	return;
 		// }
-		console.log(`Counting ${tweet.id},,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`)
-		if (day.tweets_ids.indexOf(tweet.id) !== -1) {
-			handler({ msg: `Tweet ${tweet.id} has been counted ${day.tweets_ids}`})
+		if (day.key_ids.indexOf(tweet.id) !== -1) {
+			handler({ msg: `Tweet ${tweet.id} has been counted`})
 			return
 		}
-		day.hours = day.hours.map((count, idx) => idx === date.hours() ? count + 1 : count)
-		console.log(`We've counted ${day.tweets_ids.length}, is In there ${day.tweets_ids.indexOf(tweet.id)}`)
-		day.tweets_ids = [...day.tweets_ids, tweet.id]
+		day.counts = day.counts.map((count, idx) => idx === date.hours() ? count + 1 : count)
+		day.counts = [...day.counts, tweet.id]
 		day.save(handler)
 	})
 
@@ -75,7 +77,7 @@ export default function PostTweet(req, res) {
 			res.status(404).json({error})
 			return
 		}
-		console.log('SAVED ONE')
+		console.log(`Tweet ${tweet.id} has been saved`)
 		res.json({doc})
 	}
 

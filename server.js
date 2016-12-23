@@ -13,7 +13,7 @@ var AdminTopojson = require('./app/models/admin-topojson.js');
 var config = require('./config');
 var util = require('./util');
 var http = require('http');
-var TwitterActivity = require('./handlers/twitter-activity/')
+var TwitterActivity = require('./app/handlers/twitter-activity/')
 
 var app = express();
 

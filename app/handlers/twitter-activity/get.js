@@ -1,4 +1,4 @@
-import ActivityModel from '../../app/models/twitter-activity'
+import ActivityModel from '../../models/twitter-activity'
 import moment from 'moment'
 
 function normalize(rows = [], days) {
