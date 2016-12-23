@@ -67,7 +67,7 @@ export default function PostTweet(req, res) {
 			return
 		}
 		day.counts = day.counts.map((count, idx) => idx === date.hours() ? count + 1 : count)
-		day.counts = [...day.counts, tweet.id]
+		day.key_ids = [...day.key_ids, tweet.id]
 		day.save(handler)
 	})
 
