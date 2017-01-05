@@ -17,6 +17,7 @@ var admin_schema = new mongoose.Schema({
   },
   // Globally unique identifier for this admin. Should contain `<country_code>-` as a prefix.
   admin_code: {type: String, index: true},
+  pub_src: {type: String, index: true},
   // Human-readable name, like "São Bernardo do Campo".
   name: String,
 

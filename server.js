@@ -36,6 +36,7 @@ var router = express.Router(); // get an instance of the express Router
  */
 function date_param(date_string) {
   var unix_secs = Date.parse(date_string);
+    console.log(date_string, '____', unix_secs)
   return unix_secs ? new Date(unix_secs) : null;
 }
 
@@ -74,9 +75,39 @@ router.route(
     });
   });
 
+  router.route('/travel_from_country_activity/:country_iso/:start_date/:end_date')
+    .get(apicache('1 day'), function(req, res, next) {
+      var p = req.params;
+      util.travel_from_country_activity(
+        p.country_iso,
+        p.start_date,
+        p.end_date
+      ).then(res.json.bind(res)).catch(next);
+    });
+
+router.route('/summary_azure/:container')
+  .get(apicache('1 day'), function(req, res, next) {
+    util.summary_azure(req.params.container).then(res.json.bind(res)).catch(next);
+  });
+
+
+router.route('/summary_amadeus')
+  .get(apicache('1 day'), function(req, res, next) {
+    util.summary_amadeus().then(res.json.bind(res)).catch(next);
+  });
+
+
+router.route('/summary_mobility')
+  .get(apicache('1 day'), function(req, res, next) {
+    util.summary_mobility().then(res.json.bind(res)).catch(next);
+  });
+
+
 router.route('/egress_mobility/:admin_code/:start_time?/:end_time?')
   .get(apicache('1 day'), function(req, res, next) {
     var p = req.params;
+    // console.log(p.end_time, '!!!!!')
+    // p.end_time = '2017-05-20'
     util.get_egress_mobility(p.admin_code, date_param(p.start_time),
                              date_param(p.end_time))
       .then(res.json.bind(res))
@@ -104,7 +135,8 @@ app.listen(config.port, function() {
   var warm = function(d) {
     return http.get(_.assign({hostname: 'localhost', port: config.port}, d));
   };
-  _.forEach(['br', 'co', 'pa'], function(country_code) {
+  // _.forEach(['arg', 'usa', 'deu', 'pse', 'bra', 'col', 'pan'], function(country_code) {
+  _.forEach(['arg', 'bra', 'col', 'pan'], function(country_code) {
     warm({path: '/api/admin_polygons_topojson/' + country_code});
     warm({path: '/api/country_weather/' + country_code});
   });
