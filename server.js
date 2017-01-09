@@ -98,7 +98,7 @@ app.use('/api', router);
 console.log('Connecting to DB', config.database);
 mongoose.connect(config.database);
 app.listen(config.port, function() {
-  console.log('Magic happens on', config.port);
+  console.log('Magic happens on: ', config.port);
 
   // run some warming
   var warm = function(d) {
