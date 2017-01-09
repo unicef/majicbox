@@ -7,7 +7,7 @@ WORKDIR /usr/src/app
 # Install app dependencies
 COPY package.json /usr/src/app/
 RUN npm install
-RUN make run-setup-data
+RUN make setup-dev-data
 RUN node lib/import/mobility.js -c 'br'
 
 # Bundle app source
