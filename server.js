@@ -36,7 +36,6 @@ var router = express.Router(); // get an instance of the express Router
  */
 function date_param(date_string) {
   var unix_secs = Date.parse(date_string);
-    console.log(date_string, '____', unix_secs)
   return unix_secs ? new Date(unix_secs) : null;
 }
 
@@ -75,33 +74,39 @@ router.route(
     });
   });
 
-  router.route('/travel_from_country_activity/:country_iso/:start_date/:end_date')
-    .get(apicache('1 day'), function(req, res, next) {
-      var p = req.params;
-      util.travel_from_country_activity(
-        p.country_iso,
-        p.start_date,
-        p.end_date
-      ).then(res.json.bind(res)).catch(next);
-    });
+router.route('/travel_from_country_activity/:country_iso/:start_date/:end_date')
+  .get(apicache('1 day'), function(req, res, next) {
+    var p = req.params;
+    util.travel_from_country_activity(
+      p.country_iso,
+      p.start_date,
+      p.end_date
+    ).then(res.json.bind(res)).catch(next);
+  });
 
 router.route('/summary_azure/:container')
   .get(apicache('1 day'), function(req, res, next) {
     util.summary_azure(req.params.container).then(res.json.bind(res)).catch(next);
   });
 
+// List amadeus mobility in magicbox
+router.route('/summary_magicbox')
+  .get(apicache('1 day'), function(req, res, next) {
+    util.get_amadeus_file_names_already_in_mongo().then(res.json.bind(res)).catch(next);
+  });
 
+// List of what's on amadeus sftp
 router.route('/summary_amadeus')
   .get(apicache('1 day'), function(req, res, next) {
     util.summary_amadeus().then(res.json.bind(res)).catch(next);
   });
 
-
+// Summary of mobility in pax per date
+// Used in magicbox dashboard calendar chart
 router.route('/summary_mobility')
   .get(apicache('1 day'), function(req, res, next) {
     util.summary_mobility().then(res.json.bind(res)).catch(next);
   });
-
 
 router.route('/egress_mobility/:admin_code/:start_time?/:end_time?')
   .get(apicache('1 day'), function(req, res, next) {
