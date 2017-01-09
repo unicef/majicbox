@@ -23,6 +23,7 @@ var mobility_schema = new mongoose.Schema({
   // document's admin_code.
   origin_admin_code: String,
   destination_admin_code: String,
+  source_file: String,
   // Amount of movement from origin to destination.
   count: Number,
 
@@ -42,12 +43,17 @@ var mobility_schema = new mongoose.Schema({
 // [3] https://docs.mongodb.org/manual/reference/explain-results/
 
 // -1 for `date` to get most recent data first.
+mobility_schema.index({source_file: 1});
+// Amadeus | Twitter
+mobility_schema.index({provider: 1});
+// midt, traffic
 mobility_schema.index({kind: 1, date: -1});
 mobility_schema.index({date: -1, origin_country_code: 1});
 mobility_schema.index({origin_admin_code: 1, date: -1});
 mobility_schema.index({origin_admin_code: 1,
   destination_admin_code: 1,
   kind: 1,
-  date: -1});
+  date: -1}
+);
 
 module.exports = mongoose.model('Mobility', mobility_schema);
