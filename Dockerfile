@@ -1,12 +1,17 @@
-FROM node:4.3.1
+FROM node:boron
 
-# NOTE(zora): we copy package.json into /code first, so we don't have
-# to re-download node modules if package.json doesn't change.
-WORKDIR /code
-COPY ./package.json /code/package.json
+# Create app directory
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+# Install app dependencies
+COPY package.json /usr/src/app/
 RUN npm install
+RUN make run-setup-data
+RUN node lib/import/mobility.js -c 'br'
 
-COPY . /code
-RUN mkdir -p data && cp -nrv data-sample/* data/
+# Bundle app source
+COPY . /usr/src/app
+
 EXPOSE 8000
-CMD ./scripts/entrypoint.sh
+CMD [ "npm", "start" ]

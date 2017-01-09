@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "NODE_ENV=staging node_modules/.bin/nodemon server.js 8000",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
@@ -23,6 +24,7 @@
     "mongoose": "^4.4.5",
     "mongoose-geojson-schema": "0.0.2",
     "morgan": "^1.7.0",
+    "nodemon": "^1.11.0",
     "q": "^1.4.1",
     "topojson": "^1.6.24"
   },

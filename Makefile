@@ -7,7 +7,7 @@ setup-dev-data:
 		node lib/import/admin.js -c $$i --verbose true; \
 		node lib/import/fake_weather.js -c $$i -n 30; \
 	done
-	
+
 
 .PHONY: lint
 lint:
