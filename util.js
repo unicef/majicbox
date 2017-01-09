@@ -1,14 +1,11 @@
 var _ = require('lodash');
 var config = require('./config');
 var fs = require('fs');
-var csvtojson = require('csvtojson');
-var isodate = require('isodate');
 var Admin = require('./app/models/admin');
 var Mobility = require('./app/models/mobility');
 var Weather = require('./app/models/weather');
 var request = require('superagent');
 var azure = require('./lib/azure_storage');
-var async = require('async');
 var bluebird = require('bluebird');
 var moment = require('moment');
 
@@ -31,7 +28,7 @@ function remove_file(path, file) {
       });
     });
   });
-};
+}
 
 function csv_to_json(file) {
   return new Promise(function(resolve, reject) {
@@ -43,12 +40,10 @@ function csv_to_json(file) {
       if (err) {
         return reject(err);
       }
-      resolve(result)
+      resolve(result);
     });
   });
 }
-
-
 
 /**
  * Wrapper for _.setWith that is like _.set, except it works with number
@@ -183,7 +178,7 @@ function get_admin_weather(admin_code, start_time, end_time) {
 function get_date_condition(model, conditions, start_time, end_time) {
   if (start_time && end_time) {
     start_time = start_time.toISOString();
-    end_time = end_time.toISOString()
+    end_time = end_time.toISOString();
 
     // start_time = '2015-12-15T04:49:53.690Z'
     // end_time = '2017-12-15T04:49:53.690Z'
@@ -224,7 +219,7 @@ function get_egress_mobility(origin_admin_code, start_time, end_time) {
     .then(function(date_condition) {
       if (!date_condition) { return {}; }
       conditions.date = date_condition;
-      console.log(conditions)
+      console.log(conditions);
       return new Promise(function(res, rej) {
         Mobility.find(conditions).exec(function(err, docs) {
           if (err) { return rej(err); }
@@ -243,13 +238,17 @@ function get_egress_mobility(origin_admin_code, start_time, end_time) {
 }
 
 // For magicbox-dashboard
+// container: 'raw', 'aggregated'
 function summary_azure(container) {
   return new Promise(function(resolve) {
     azure.get_collection_names(container).then(function(list) {
       bluebird.reduce(list, function(h, col) {
-        return azure.get_blob_names(container, col).then(function(names) {
+        return azure.get_blob_names(container, col)
+        .then(function(names) {
           h[col] = names.filter(function(e) {
             switch (col) {
+              default:
+                // do nothing
               case 'midt':
               case 'schedule':
                 return e.match(/(\d{4}-\d{2}-\d{2})(_to_)(\d{4}-\d{2}-\d{2})/);
@@ -267,11 +266,11 @@ function summary_azure(container) {
   });
 }
 
-function azure_collection(container) {
-  return new Promise(function(resolve, reject) {
-
-  });
-}
+// function azure_collection(container) {
+//   return new Promise(function(resolve, reject) {
+//
+//   });
+// }
 // For magicbox-dashboard
 function summary_amadeus() {
   return new Promise(function(resolve) {
@@ -282,7 +281,40 @@ function summary_amadeus() {
     });
   });
 }
-// For magicbox-dashboard
+
+// For magicbox-dashboard Timechart AND for amadeus import
+function get_amadeus_file_names_already_in_mongo() {
+  return new Promise(function(resolve, reject) {
+    Mobility.aggregate([
+      {$group: {
+        _id: {
+          kind: "$kind",
+          source_file: "$source_file"
+        },
+        total: {$sum: 1}
+      }
+    },
+
+    {$group: {
+      _id: "$_id.kind",
+      files: {
+        $push: "$_id.source_file"
+      }
+    }
+    }
+    ]).exec(function(err, source_files) {
+      if (err) {return reject(err); }
+      resolve(
+        source_files.reduce(function(h, obj) {
+          h[obj._id] = obj.files;
+          return h;
+        }, {})
+      );
+    });
+  });
+}
+
+// For magicbox-dashboard calendar
 function summary_mobility() {
   return new Promise(function(resolve, reject) {
     Mobility.aggregate([
@@ -320,20 +352,20 @@ function summary_mobility() {
 
 function travel_from_country_activity(origin_country_code, start_date, end_date) {
   // console.log(start_date)
-  var date = moment(parseInt(start_date, 10)).toDate();
-  console.log(date, '!!!')
+  start_date = moment(parseInt(start_date, 10)).toDate();
+  end_date = moment(parseInt(end_date, 10)).toDate();
   return new Promise(function(resolve, reject) {
     Mobility.aggregate(
-       [
-          {$match: {date: { $lte: date, $gte: date}}},
-         {
-           $group:
-             {
-               _id: { origin_country_code:  "$destination_country_code"  },
-               count: { $sum: 1 }
-             }
-         }
-       ]
+      [
+        {$match: {date: {$lte: start_date, $gte: end_date}}},
+        {
+          $group:
+          {
+            _id: {origin_country_code: "$destination_country_code"},
+            count: {$sum: 1}
+          }
+        }
+      ]
     ).exec(function(err, doc) {
       if (err) {
         return reject(err);
@@ -344,12 +376,11 @@ function travel_from_country_activity(origin_country_code, start_date, end_date)
           return {
             origin_country_code: country_code_3_to_2[obj._id.origin_country_code],
             count: obj.count
-          }
+          };
         })
       );
     });
   });
-
 }
 
 /**
@@ -431,6 +462,7 @@ var stopwatch = (function() {
 })();
 
 module.exports = {
+  get_amadeus_file_names_already_in_mongo: get_amadeus_file_names_already_in_mongo,
   travel_from_country_activity: travel_from_country_activity,
   summary_azure: summary_azure,
   summary_amadeus: summary_amadeus,
