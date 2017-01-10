@@ -94,9 +94,15 @@ router.route('/mobility_populations/:country_code/:start_time?/:end_time?')
 
 // All of our routes will be prefixed with '/api'.
 app.use('/api', router);
+app.use('/', function(req, res) {
+  res.send('Majicbox APIs')
+})
+console.log('Connecting to DB ------------------------------------ ', config.database);
+mongoose.connect(config.database, function(err) {
+  if (err) throw err;
 
-console.log('Connecting to DB', config.database);
-mongoose.connect(config.database);
+  console.log('CONNECTED TO DB ---**** MB/server.js')
+});
 app.listen(config.port, function() {
   console.log('Magic happens on: ', config.port);
 
@@ -104,7 +110,8 @@ app.listen(config.port, function() {
   var warm = function(d) {
     return http.get(_.assign({hostname: 'localhost', port: config.port}, d));
   };
-  _.forEach(['br', 'co', 'pa'], function(country_code) {
+  
+  _.forEach(['br'], function(country_code) {
     warm({path: '/api/admin_polygons_topojson/' + country_code});
     warm({path: '/api/country_weather/' + country_code});
   });

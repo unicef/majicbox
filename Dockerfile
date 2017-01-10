@@ -1,17 +1,17 @@
 FROM node:boron
+LABEL majicbox='1.0.0'
 
 # Create app directory
-RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app
+RUN mkdir -p /app
+RUN mkdir -p /temp
 
-# Install app dependencies
-COPY package.json /usr/src/app/
-RUN npm install
-RUN make setup-dev-data
-RUN node lib/import/mobility.js -c 'br'
-
-# Bundle app source
-COPY . /usr/src/app
+COPY ./package.json /temp
+RUN cd /temp && npm install
+RUN cp -a /temp/node_modules /app/
 
 EXPOSE 8000
-CMD [ "npm", "start" ]
+
+WORKDIR /app
+ADD . /app
+
+CMD ./scripts/entrypoint.sh
