@@ -97,22 +97,12 @@ app.use('/api', router);
 app.use('/', function(req, res) {
   res.send('Majicbox APIs')
 })
-console.log('Connecting to DB ------------------------------------ ', config.database);
+
 mongoose.connect(config.database, function(err) {
   if (err) throw err;
-
   console.log('CONNECTED TO DB ---**** MB/server.js')
 });
+
 app.listen(config.port, function() {
   console.log('Magic happens on: ', config.port);
-
-  // run some warming
-  var warm = function(d) {
-    return http.get(_.assign({hostname: 'localhost', port: config.port}, d));
-  };
-  
-  _.forEach(['br'], function(country_code) {
-    warm({path: '/api/admin_polygons_topojson/' + country_code});
-    warm({path: '/api/country_weather/' + country_code});
-  });
 });

@@ -13,6 +13,6 @@ var process_env_or = function(names, default_value) {
 module.exports = {
   port: process_env_or('PORT', 8000),
   database: process_env_or(['PROD_DB', 'MONGOHQ_URL'],
-                           'mongodb://mongo:27017/majicbox'),
-  testdb: process_env_or('TEST_DB', 'mongodb://mongo:27017/test')
+                           'mongodb://db:27017/majicbox'),
+  testdb: process_env_or('TEST_DB', 'mongodb://db:27017/test')
 };

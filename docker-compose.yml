@@ -1,16 +1,20 @@
 version: "2"
 services:
   web:
-    build: .
+    extends:
+      file: docker-common.yml
+      service: web
     volumes:
       - ./:/app
     depends_on:
-      - mongo
+      - db
     links:
-      - "mongo:database"
-    ports:
-      - "8000:8000"
-  mongo:
+      - db
+    environment:
+      - MONGO_DATABASE_URL=mongodb://db:27017/majicbox
+  db:
     image: mongo
+    volumes:
+      - "./mongo-data:/data/db"
     ports:
       - "27017:27017"
