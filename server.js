@@ -95,7 +95,7 @@ router.route('/mobility_populations/:country_code/:start_time?/:end_time?')
 // All of our routes will be prefixed with '/api'.
 app.use('/api', router);
 app.use('/', function(req, res) {
-  res.send('Majicbox APIs - ')
+  res.send('Majicbox APIs')
 })
 
 mongoose.connect(config.database, function(err) {

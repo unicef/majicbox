@@ -1,14 +1,16 @@
 FROM node:7.3.0
+MAINTAINER UnicefInnovation Office
 
-MAINTAINER Unicef Innovation Office
+ENV HOME /code
 
-WORKDIR /code
+WORKDIR $HOME
 
-COPY npm-shrinkwrap.json .
+ADD package.json $HOME/package.json
 
 RUN npm install
+RUN npm install -g nodemon
 
-COPY . .
+ADD . $HOME
 
 EXPOSE 8000
 
