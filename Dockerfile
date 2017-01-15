@@ -1,20 +1,15 @@
 FROM node:7.3.0
-LABEL majicbox='1.0.0'
-MAINTAINER Qusai Jouda
 
-# Create app directory
-RUN mkdir -p /app
-RUN mkdir -p /temp
+MAINTAINER Unicef Innovation Office
 
-COPY ./package.json /temp
-RUN cd /temp && npm install
-RUN cp -a /temp/node_modules /app/
+WORKDIR /code
 
-RUN npm install nodemon -g
+COPY npm-shrinkwrap.json .
+
+RUN npm install
+
+COPY . .
 
 EXPOSE 8000
 
-WORKDIR /app
-ADD . /app
-
-CMD ["node", "server.js"]
+CMD ["npm", "start"]
