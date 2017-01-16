@@ -5,6 +5,7 @@ services:
     command: npm run dev
     volumes:
       - .:/code
+      - /code/node_modules
     depends_on:
       - db
     links:
