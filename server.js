@@ -74,40 +74,6 @@ router.route(
     });
   });
 
-router.route('/travel_from_country_activity/:country_iso/:start_date/:end_date')
-  .get(apicache('1 day'), function(req, res, next) {
-    var p = req.params;
-    util.travel_from_country_activity(
-      p.country_iso,
-      p.start_date,
-      p.end_date
-    ).then(res.json.bind(res)).catch(next);
-  });
-
-router.route('/summary_azure/:container')
-  .get(apicache('1 day'), function(req, res, next) {
-    util.summary_azure(req.params.container).then(res.json.bind(res)).catch(next);
-  });
-
-// List amadeus mobility in magicbox
-router.route('/summary_magicbox')
-  .get(apicache('1 day'), function(req, res, next) {
-    util.get_amadeus_file_names_already_in_mongo().then(res.json.bind(res)).catch(next);
-  });
-
-// List of what's on amadeus sftp
-router.route('/summary_amadeus')
-  .get(apicache('1 day'), function(req, res, next) {
-    util.summary_amadeus().then(res.json.bind(res)).catch(next);
-  });
-
-// Summary of mobility in pax per date
-// Used in magicbox dashboard calendar chart
-router.route('/summary_mobility')
-  .get(apicache('1 day'), function(req, res, next) {
-    util.summary_mobility().then(res.json.bind(res)).catch(next);
-  });
-
 router.route('/egress_mobility/:admin_code/:start_time?/:end_time?')
   .get(apicache('1 day'), function(req, res, next) {
     var p = req.params;
@@ -128,6 +94,41 @@ router.route('/mobility_populations/:country_code/:start_time?/:end_time?')
       .catch(next);
   });
 
+// Magicbox Dashboard routes
+  router.route('/travel_from_country_activity/:country_iso/:start_date/:end_date')
+    .get(apicache('1 day'), function(req, res, next) {
+      var p = req.params;
+      util.travel_from_country_activity(
+        p.country_iso,
+        p.start_date,
+        p.end_date
+      ).then(res.json.bind(res)).catch(next);
+    });
+
+router.route('/summary_azure/:container')
+  .get(apicache('1 day'), function(req, res, next) {
+    util.summary_azure(req.params.container).then(res.json.bind(res)).catch(next);
+  });
+
+// List amadeus mobility in magicbox
+router.route('/summary_magicbox')
+  .get(apicache('1 day'), function(req, res, next) {
+    util.get_amadeus_file_names_already_in_mongo().then(res.json.bind(res)).catch(next);
+  });
+
+// List of what's on amadeus sftp
+router.route('/summary_amadeus')
+  .get(apicache('1 hour'), function(req, res, next) {
+    util.summary_amadeus().then(res.json.bind(res)).catch(next);
+  });
+
+// Summary of mobility in pax per date
+// Used in magicbox dashboard calendar chart
+router.route('/summary_mobility')
+  .get(apicache('1 day'), function(req, res, next) {
+    util.summary_mobility().then(res.json.bind(res)).catch(next);
+  });
+
 // All of our routes will be prefixed with '/api'.
 app.use('/api', router);
 
@@ -141,7 +142,7 @@ app.listen(config.port, function() {
     return http.get(_.assign({hostname: 'localhost', port: config.port}, d));
   };
   // _.forEach(['arg', 'usa', 'deu', 'pse', 'bra', 'col', 'pan'], function(country_code) {
-  _.forEach(['arg', 'bra', 'col', 'pan'], function(country_code) {
+  _.forEach(['col'], function(country_code) {
     warm({path: '/api/admin_polygons_topojson/' + country_code});
     warm({path: '/api/country_weather/' + country_code});
   });
