@@ -95,15 +95,15 @@ router.route('/mobility_populations/:country_code/:start_time?/:end_time?')
   });
 
 // Magicbox Dashboard routes
-  router.route('/travel_from_country_activity/:country_iso/:start_date/:end_date')
-    .get(apicache('1 day'), function(req, res, next) {
-      var p = req.params;
-      util.travel_from_country_activity(
-        p.country_iso,
-        p.start_date,
-        p.end_date
-      ).then(res.json.bind(res)).catch(next);
-    });
+router.route('/travel_from_country_activity/:country_iso/:start_date/:end_date')
+  .get(apicache('1 day'), function(req, res, next) {
+    var p = req.params;
+    util.travel_from_country_activity(
+      p.country_iso,
+      p.start_date,
+      p.end_date
+    ).then(res.json.bind(res)).catch(next);
+  });
 
 router.route('/summary_azure/:container')
   .get(apicache('1 day'), function(req, res, next) {
