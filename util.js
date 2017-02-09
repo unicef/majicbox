@@ -350,19 +350,44 @@ function summary_mobility() {
   });
 }
 
-function travel_from_country_activity(origin_country_code, start_date, end_date) {
-  // console.log(start_date)
+/**
+ * Returns aggregated activity by country.
+ *
+ * @param{Date} start_date - See comment near the top of this module.
+ * @param{Date} end_date - See comment near the top of this module.
+ * @param{string} origin_country_code - Origin country.
+ * @return{Promise} Aggregate country departure activty by date.
+  Example:
+ * {
+ *   "origin_country_code": "VI",
+ *   "count": 17869
+ * },
+ */
+function travel_from_country_activity(start_date, end_date, origin_country_code) {
   start_date = moment(parseInt(start_date, 10)).toDate();
   end_date = moment(parseInt(end_date, 10)).toDate();
+
+  var obj_match = {
+    date: {$gte: start_date, $lte: end_date}
+  };
+
+  if (origin_country_code) {
+    obj_match = Object.assign(
+      {origin_country_code: "ARG"},
+      obj_match
+    );
+  }
+
   return new Promise(function(resolve, reject) {
     Mobility.aggregate(
       [
-        {$match: {date: {$lte: start_date, $gte: end_date}}},
+        {$match: obj_match
+        },
         {
           $group:
           {
-            _id: {origin_country_code: "$destination_country_code"},
-            count: {$sum: 1}
+            _id: {origin_country_code: "$origin_country_code"},
+            count: {$sum: "$count"}
           }
         }
       ]
@@ -370,7 +395,6 @@ function travel_from_country_activity(origin_country_code, start_date, end_date)
       if (err) {
         return reject(err);
       }
-      console.log();
       resolve(
         doc.map(function(obj) {
           return {
