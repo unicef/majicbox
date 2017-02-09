@@ -373,7 +373,7 @@ function travel_from_country_activity(start_date, end_date, origin_country_code)
 
   if (origin_country_code) {
     obj_match = Object.assign(
-      {origin_country_code: "ARG"},
+      {origin_country_code: origin_country_code.toUpperCase()},
       obj_match
     );
   }

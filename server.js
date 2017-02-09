@@ -95,13 +95,13 @@ router.route('/mobility_populations/:country_code/:start_time?/:end_time?')
   });
 
 // Magicbox Dashboard routes
-router.route('/travel_from_country_activity/:country_iso/:start_date/:end_date')
+router.route('/travel_from_country_activity/:start_date/:end_date/:country_iso?')
   .get(apicache('1 day'), function(req, res, next) {
     var p = req.params;
     util.travel_from_country_activity(
-      p.country_iso,
       p.start_date,
-      p.end_date
+      p.end_date,
+      p.country_iso
     ).then(res.json.bind(res)).catch(next);
   });
 
