@@ -4,7 +4,7 @@ var activity = require('../../util');
 var importer = require('../../lib/import/amadeus_mobility');
 var testutil = require('../testutil');
 
-describe('Import amadeus mobility', function() {
+describe('Aggregate travel activty by country', function() {
   before(function initializeDatabase() {
     return testutil.connect_and_clear_test_db()
       .then(function() {
