@@ -1,7 +1,30 @@
 var assert = require('chai').assert;
-var activity = require('../../util');
+var activity = require('../../lib/travel_activity');
+var helper = require('../../app/helpers/amadeus');
+var mongoose = require('mongoose');
+var testutil = require('../testutil');
+var path_to_csv = './test/data/amadeus_mobility/traffic/';
+var csv_file = 'traffic_W_1284_09.csv';
 
 describe('Aggregate travel activty by country', function() {
+  before(function initializeDatabase() {
+    return testutil.connect_and_clear_test_db()
+      .then(function() {
+        var save_queue = helper.save_queue;
+        // Run import_amadeus twice to make sure that
+        // no file can be imported more than once.
+        return helper.import_csv_mongo(
+          save_queue,
+          path_to_csv,
+          'traffic',
+          csv_file
+        );
+      });
+  });
+
+  after(function(done) {
+    mongoose.disconnect(done);
+  });
   // TODO(mikefab): make test more robust.
   describe('travel_from_country_activity', function() {
     it(
