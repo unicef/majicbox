@@ -1,25 +1,7 @@
 var assert = require('chai').assert;
-var mongoose = require('mongoose');
 var activity = require('../../util');
-var importer = require('../../lib/import/amadeus_mobility');
-var testutil = require('../testutil');
 
 describe('Aggregate travel activty by country', function() {
-  before(function initializeDatabase() {
-    return testutil.connect_and_clear_test_db()
-      .then(function() {
-        // Run import_amadeus twice to make sure that
-        // no file can be imported more than once.
-        return importer.import_amadeus(1).then(function() {
-          importer.import_amadeus(1);
-        });
-      });
-  });
-
-  after(function(done) {
-    mongoose.disconnect(done);
-  });
-
   // TODO(mikefab): make test more robust.
   describe('travel_from_country_activity', function() {
     it(
