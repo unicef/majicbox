@@ -6,8 +6,6 @@ var Mobility = require('./app/models/mobility');
 var Weather = require('./app/models/weather');
 var request = require('superagent');
 
-var bluebird = require('bluebird');
-
 function remove_file(path, file) {
   return new Promise(function(resolve, reject) {
     fs.stat(path + file, function(err, stats) {
@@ -232,7 +230,6 @@ function get_egress_mobility(origin_admin_code, start_time, end_time) {
       });
     });
 }
-
 
 // function azure_collection(container) {
 //   return new Promise(function(resolve, reject) {
