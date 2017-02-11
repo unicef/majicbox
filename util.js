@@ -5,7 +5,7 @@ var Admin = require('./app/models/admin');
 var Mobility = require('./app/models/mobility');
 var Weather = require('./app/models/weather');
 var request = require('superagent');
-var azure = require('./lib/azure_storage');
+
 var bluebird = require('bluebird');
 
 function remove_file(path, file) {
@@ -233,34 +233,6 @@ function get_egress_mobility(origin_admin_code, start_time, end_time) {
     });
 }
 
-// For magicbox-dashboard
-// container: 'raw', 'aggregated'
-function summary_azure(container) {
-  return new Promise(function(resolve) {
-    azure.get_collection_names(container).then(function(list) {
-      bluebird.reduce(list, function(h, col) {
-        return azure.get_blob_names(container, col)
-        .then(function(names) {
-          h[col] = names.filter(function(e) {
-            switch (col) {
-              default:
-                // do nothing
-              case 'midt':
-              case 'schedule':
-                return e.match(/(\d{4}-\d{2}-\d{2})(_to_)(\d{4}-\d{2}-\d{2})/);
-              case 'traffic':
-                return e.match(/(\d{4}_\d{2})/);
-            }
-          });
-          return h;
-        });
-      }, {}).then(function(h) {
-        console.log(h);
-        resolve(h);
-      });
-    });
-  });
-}
 
 // function azure_collection(container) {
 //   return new Promise(function(resolve, reject) {
@@ -426,7 +398,6 @@ var stopwatch = (function() {
 
 module.exports = {
   get_amadeus_file_names_already_in_mongo: get_amadeus_file_names_already_in_mongo,
-  summary_azure: summary_azure,
   summary_amadeus: summary_amadeus,
   summary_mobility: summary_mobility,
   remove_file: remove_file,
