@@ -8,7 +8,7 @@ var compression = require('compression');
 var express = require('express');
 var mongoose = require('mongoose');
 var morgan = require('morgan');
-
+var helper = require('./server_helper');
 var AdminTopojson = require('./app/models/admin-topojson.js');
 var config = require('./config');
 var util = require('./util');
@@ -95,19 +95,19 @@ router.route('/mobility_populations/:country_code/:start_time?/:end_time?')
   });
 
 // Magicbox Dashboard routes
-router.route('/travel_from_country_activity/:country_iso/:start_date/:end_date')
+router.route('/travel_from_country_activity/:start_date/:end_date/:country_iso?')
   .get(apicache('1 day'), function(req, res, next) {
     var p = req.params;
     util.travel_from_country_activity(
-      p.country_iso,
       p.start_date,
-      p.end_date
+      p.end_date,
+      p.country_iso
     ).then(res.json.bind(res)).catch(next);
   });
 
 router.route('/summary_azure/:container')
   .get(apicache('1 day'), function(req, res, next) {
-    util.summary_azure(req.params.container).then(res.json.bind(res)).catch(next);
+    helper.summary_azure(req.params.container).then(res.json.bind(res)).catch(next);
   });
 
 // List amadeus mobility in magicbox

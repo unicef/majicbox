@@ -5,12 +5,6 @@ var Admin = require('./app/models/admin');
 var Mobility = require('./app/models/mobility');
 var Weather = require('./app/models/weather');
 var request = require('superagent');
-var azure = require('./lib/azure_storage');
-var bluebird = require('bluebird');
-var moment = require('moment');
-
-// For google geochart in magicbox dashboard app
-var country_code_3_to_2 = JSON.parse(fs.readFileSync('./lib/country_codes.json', 'utf8'));
 
 function remove_file(path, file) {
   return new Promise(function(resolve, reject) {
@@ -237,35 +231,6 @@ function get_egress_mobility(origin_admin_code, start_time, end_time) {
     });
 }
 
-// For magicbox-dashboard
-// container: 'raw', 'aggregated'
-function summary_azure(container) {
-  return new Promise(function(resolve) {
-    azure.get_collection_names(container).then(function(list) {
-      bluebird.reduce(list, function(h, col) {
-        return azure.get_blob_names(container, col)
-        .then(function(names) {
-          h[col] = names.filter(function(e) {
-            switch (col) {
-              default:
-                // do nothing
-              case 'midt':
-              case 'schedule':
-                return e.match(/(\d{4}-\d{2}-\d{2})(_to_)(\d{4}-\d{2}-\d{2})/);
-              case 'traffic':
-                return e.match(/(\d{4}_\d{2})/);
-            }
-          });
-          return h;
-        });
-      }, {}).then(function(h) {
-        console.log(h);
-        resolve(h);
-      });
-    });
-  });
-}
-
 // function azure_collection(container) {
 //   return new Promise(function(resolve, reject) {
 //
@@ -350,39 +315,6 @@ function summary_mobility() {
   });
 }
 
-function travel_from_country_activity(origin_country_code, start_date, end_date) {
-  // console.log(start_date)
-  start_date = moment(parseInt(start_date, 10)).toDate();
-  end_date = moment(parseInt(end_date, 10)).toDate();
-  return new Promise(function(resolve, reject) {
-    Mobility.aggregate(
-      [
-        {$match: {date: {$lte: start_date, $gte: end_date}}},
-        {
-          $group:
-          {
-            _id: {origin_country_code: "$destination_country_code"},
-            count: {$sum: 1}
-          }
-        }
-      ]
-    ).exec(function(err, doc) {
-      if (err) {
-        return reject(err);
-      }
-      console.log();
-      resolve(
-        doc.map(function(obj) {
-          return {
-            origin_country_code: country_code_3_to_2[obj._id.origin_country_code],
-            count: obj.count
-          };
-        })
-      );
-    });
-  });
-}
-
 /**
  * Returns relative population estimates for the country based on mobility data.
  *
@@ -463,8 +395,6 @@ var stopwatch = (function() {
 
 module.exports = {
   get_amadeus_file_names_already_in_mongo: get_amadeus_file_names_already_in_mongo,
-  travel_from_country_activity: travel_from_country_activity,
-  summary_azure: summary_azure,
   summary_amadeus: summary_amadeus,
   summary_mobility: summary_mobility,
   remove_file: remove_file,
