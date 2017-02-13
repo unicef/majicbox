@@ -8,7 +8,7 @@ var compression = require('compression');
 var express = require('express');
 var mongoose = require('mongoose');
 var morgan = require('morgan');
-
+var helper = require('./server_helper');
 var AdminTopojson = require('./app/models/admin-topojson.js');
 var config = require('./config');
 var util = require('./util');
@@ -77,6 +77,8 @@ router.route(
 router.route('/egress_mobility/:admin_code/:start_time?/:end_time?')
   .get(apicache('1 day'), function(req, res, next) {
     var p = req.params;
+    // console.log(p.end_time, '!!!!!')
+    // p.end_time = '2017-05-20'
     util.get_egress_mobility(p.admin_code, date_param(p.start_time),
                              date_param(p.end_time))
       .then(res.json.bind(res))
@@ -92,6 +94,41 @@ router.route('/mobility_populations/:country_code/:start_time?/:end_time?')
       .catch(next);
   });
 
+// Magicbox Dashboard routes
+router.route('/travel_from_country_activity/:start_date/:end_date/:country_iso?')
+  .get(apicache('1 day'), function(req, res, next) {
+    var p = req.params;
+    util.travel_from_country_activity(
+      p.start_date,
+      p.end_date,
+      p.country_iso
+    ).then(res.json.bind(res)).catch(next);
+  });
+
+router.route('/summary_azure/:container')
+  .get(apicache('1 day'), function(req, res, next) {
+    helper.summary_azure(req.params.container).then(res.json.bind(res)).catch(next);
+  });
+
+// List amadeus mobility in magicbox
+router.route('/summary_magicbox')
+  .get(apicache('1 day'), function(req, res, next) {
+    util.get_amadeus_file_names_already_in_mongo().then(res.json.bind(res)).catch(next);
+  });
+
+// List of what's on amadeus sftp
+router.route('/summary_amadeus')
+  .get(apicache('1 hour'), function(req, res, next) {
+    util.summary_amadeus().then(res.json.bind(res)).catch(next);
+  });
+
+// Summary of mobility in pax per date
+// Used in magicbox dashboard calendar chart
+router.route('/summary_mobility')
+  .get(apicache('1 day'), function(req, res, next) {
+    util.summary_mobility().then(res.json.bind(res)).catch(next);
+  });
+
 // All of our routes will be prefixed with '/api'.
 app.use('/api', router);
 
@@ -104,7 +141,8 @@ app.listen(config.port, function() {
   var warm = function(d) {
     return http.get(_.assign({hostname: 'localhost', port: config.port}, d));
   };
-  _.forEach(['br', 'co', 'pa'], function(country_code) {
+  // _.forEach(['arg', 'usa', 'deu', 'pse', 'bra', 'col', 'pan'], function(country_code) {
+  _.forEach(['col'], function(country_code) {
     warm({path: '/api/admin_polygons_topojson/' + country_code});
     warm({path: '/api/country_weather/' + country_code});
   });

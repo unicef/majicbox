@@ -12,15 +12,18 @@ var mobility_schema = new mongoose.Schema({
   date: Date,
   // Data subtype (e.g. "daily"/"hourly", "day"/"night", etc.).
   kind: String,
+  provider: String,
   // ISO 3166-1 alpha-2 two letter country codes. NOTE: there are no indexes on these because we
   // don't have a usecase for it (yet).
   origin_country_code: String,
   destination_country_code: String,
-
+  duration: Number,
+  date_to: Date,
   // Movement origin and destination. Both values should match a Admin
   // document's admin_code.
   origin_admin_code: String,
   destination_admin_code: String,
+  source_file: String,
   // Amount of movement from origin to destination.
   count: Number,
 
@@ -40,8 +43,17 @@ var mobility_schema = new mongoose.Schema({
 // [3] https://docs.mongodb.org/manual/reference/explain-results/
 
 // -1 for `date` to get most recent data first.
+mobility_schema.index({source_file: 1});
+// Amadeus | Twitter
+mobility_schema.index({provider: 1});
+// midt, traffic
+mobility_schema.index({kind: 1, date: -1});
+mobility_schema.index({date: -1, origin_country_code: 1});
 mobility_schema.index({origin_admin_code: 1, date: -1});
-mobility_schema.index({origin_admin_code: 1, destination_admin_code: 1,
-                       date: -1});
+mobility_schema.index({origin_admin_code: 1,
+  destination_admin_code: 1,
+  kind: 1,
+  date: -1}
+);
 
 module.exports = mongoose.model('Mobility', mobility_schema);

@@ -8,6 +8,7 @@ This application uses Mongodb for its database. You will need to have it
 installed to use it. Check out the Mongodb installation information at:
 
     http://docs.mongodb.org/manual/tutorial/install-mongodb-on-os-x/
+    https://www.digitalocean.com/community/tutorials/how-to-install-mongodb-on-ubuntu-16-04
 
 
 ## Installation
@@ -16,7 +17,9 @@ installed to use it. Check out the Mongodb installation information at:
 - `cd majicbox`
 - `npm install`
 - `make setup-dev-data`
-- `node lib/import/mobility.js -c 'br'`
+  `node lib/import/admin.js -c col -a 2 -s santiblanko``
+  `nohup node lib/import/amadeus_mobility.js  nohup.out >&1& ``
+<!-- - `node lib/import/mobility.js -c 'br'` -->
 - `NODE_ENV=development nodemon server.js 8000`
 - browse to http://localhost:8000/api
 
@@ -82,3 +85,4 @@ Example for Colombia: `mkdir ./data/geojson/co`
 - From project root run the following command where -c is country code:
 
 `node lib/import/admin.js -f './data/geojson/br/admin2.json' -c 'co' --verbose true`
+`node lib/import/admin.js -s 'gadm2-8' -c 'arg' -a 2 --verbose true`

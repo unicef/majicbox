@@ -1,0 +1,10 @@
+year,week,pax,origin_iso,origin_id,dest_iso,dest_id
+2016,38,0,ABW,abw_14_gadm2-8,USA,usa_244_15_767_gadm2-8
+2016,38,1,ARG,arg_12_15_361_gadm2-8,USA,usa_244_22_1228_gadm2-8
+2016,38,2,ARG,arg_12_19_430_gadm2-8,USA,usa_244_6_258_gadm2-8
+2016,38,3,ARG,arg_12_1_38_gadm2-8,USA,usa_244_6_275_gadm2-8
+2016,38,4,ARG,arg_12_2_130_gadm2-8,USA,usa_244_49_3016_gadm2-8
+2016,39,5,ARG,arg_12_2_130_gadm2-8,USA,usa_244_4_154_gadm2-8
+2016,39,6,ARG,arg_12_5_197_gadm2-8,USA,usa_244_47_2896_gadm2-8
+2016,38,7,ARG,arg_12_5_197_gadm2-8,USA,usa_244_5_224_gadm2-8
+2016,39,8,ATG,atg_11_6_gadm2-8,USA,usa_244_14_657_gadm2-8
