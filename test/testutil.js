@@ -1,8 +1,7 @@
 var _ = require('lodash');
 var assert = require('assert');
 var mongoose = require('mongoose');
-
-var db = require('../database');
+var db = require('../storage');
 
 /**
  * Wrapper around assert() and _.isEqual that also outputs a useful error upon

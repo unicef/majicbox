@@ -1,14 +1,13 @@
 import express from 'express'
 import apicache from 'apicache'
 import util from '../../util'
-import server_helper from '../../server_helper'
 import helper from '../helpers/amadeus'
 const cacheIt = apicache.options({debug: false}).middleware
 const router = express.Router()
 
 router.route('/summary_azure/:container')
   .get(cacheIt('1 day'), function(req, res, next) {
-    server_helper.summary_azure(req.params.container).then(res.json.bind(res)).catch(next);
+    helper.summary_azure(req.params.container).then(res.json.bind(res)).catch(next);
   });
 
 // List amadeus mobility in magicbox
