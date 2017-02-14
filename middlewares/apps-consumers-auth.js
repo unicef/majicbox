@@ -6,7 +6,7 @@ export default function protect(req, res, next) {
 
   var app = apps.find(app => app.token === token)
 
-  if(!app) {
+  if (!app) {
     res.status(401).send({
       msg: 'A valid API token must be provided. Contact Unicef Innovation Office'
     })

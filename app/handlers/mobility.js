@@ -1,10 +1,10 @@
-import express from 'express'
-import apicache from 'apicache'
-import util from '../../util'
-import { date_param } from './helpers'
+import express from 'express';
+import apicache from 'apicache';
+import util from '../../util';
+import {date_param} from './helpers';
 
-const cacheIt = apicache.options({ debug: false }).middleware
-const router = express.Router()
+const cacheIt = apicache.options({debug: false}).middleware;
+const router = express.Router();
 
 router.route('/egress_mobility/:admin_code/:start_time?/:end_time?')
   .get(cacheIt('1 day'), function(req, res, next) {

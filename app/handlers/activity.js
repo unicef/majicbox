@@ -1,9 +1,9 @@
-import express from 'express'
-import apicache from 'apicache'
-import util from '../../util'
+import express from 'express';
+import apicache from 'apicache';
+import util from '../../util';
 
-const cacheIt = apicache.options({ debug: false }).middleware
-const router = express.Router()
+const cacheIt = apicache.options({debug: false}).middleware;
+const router = express.Router();
 
 router.route('/travel_from_country_activity/:start_date/:end_date/:country_iso?')
   .get(cacheIt('1 day'), function(req, res, next) {
@@ -15,4 +15,4 @@ router.route('/travel_from_country_activity/:start_date/:end_date/:country_iso?'
     ).then(res.json.bind(res)).catch(next);
   });
 
-export default router
+export default router;

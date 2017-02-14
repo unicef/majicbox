@@ -1,9 +1,9 @@
-import express from 'express'
-import apicache from 'apicache'
-import AdminTopojson from '../models/admin-topojson.js'
+import express from 'express';
+import apicache from 'apicache';
+import AdminTopojson from '../models/admin-topojson.js';
 
-const cacheIt = apicache.options({ debug: false }).middleware
-const router = express.Router()
+const cacheIt = apicache.options({debug: false}).middleware;
+const router = express.Router();
 
 router.route('/admin_polygons_topojson/:country_code')
   .get(cacheIt('1 day'), function(req, res, next) {
@@ -15,4 +15,4 @@ router.route('/admin_polygons_topojson/:country_code')
     });
   });
 
-export default router
+export default router;
