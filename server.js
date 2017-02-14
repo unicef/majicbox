@@ -20,7 +20,8 @@ const app = express()
 app.use(compression())  // gzip
 app.use(morgan('dev'))  // request logging
 
-// Parse incoming request bodies in a middleware before your handlers, available under the req.body property.
+// Parse incoming request bodies in a middleware before your handlers,
+// available under the req.body property.
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(bodyParser.json())
 

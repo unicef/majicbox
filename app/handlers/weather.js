@@ -1,9 +1,9 @@
 import express from 'express'
 import apicache from 'apicache'
 import util from '../../util'
-import { date_param } from './helpers'
+import {date_param} from './helpers'
 
-const cacheIt = apicache.options({ debug: false }).middleware
+const cacheIt = apicache.options({debug: false}).middleware
 const router = express.Router()
 
 router
