@@ -2,7 +2,7 @@ var _ = require('lodash');
 var assert = require('assert');
 var mongoose = require('mongoose');
 
-var config = require('../config');
+var db = require('../database');
 
 /**
  * Wrapper around assert() and _.isEqual that also outputs a useful error upon
@@ -43,7 +43,7 @@ function clear_db() {
 function connect_and_clear_test_db() {
   return new Promise(function(res, rej) {
     if (mongoose.connection.readyState === 0) {
-      mongoose.connect(config.testdb, function(err) {
+      mongoose.connect(db.testdb, function(err) {
         if (err) {
           rej(err);
         } else {
