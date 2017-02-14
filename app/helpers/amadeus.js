@@ -1,7 +1,52 @@
 var async = require('async');
+var config = require('../config');
 var csv = require('fast-csv');
 var Mobility = require('../models/mobility');
 var moment = require('moment');
+var request = require('superagent');
+
+// For magicbox-dashboard
+exports.summary_amadeus = function() {
+  return new Promise(function(resolve) {
+    var url = config.amadeus_url + 'api/collections';
+    request.get(url).then(response => {
+      console.log(response);
+      resolve(JSON.parse(response.text));
+    });
+  });
+}
+
+// For magicbox-dashboard Timechart AND for amadeus import
+exports.get_amadeus_file_names_already_in_mongo = function() {
+  return new Promise(function(resolve, reject) {
+    Mobility.aggregate([
+      {$group: {
+        _id: {
+          kind: "$kind",
+          source_file: "$source_file"
+        },
+        total: {$sum: 1}
+      }
+    },
+
+    {$group: {
+      _id: "$_id.kind",
+      files: {
+        $push: "$_id.source_file"
+      }
+    }
+    }
+    ]).exec(function(err, source_files) {
+      if (err) {return reject(err); }
+      resolve(
+        source_files.reduce(function(h, obj) {
+          h[obj._id] = obj.files;
+          return h;
+        }, {})
+      );
+    });
+  });
+}
 
 exports.save_queue = async.queue(function(task, callback) {
   task.catch(console.log).then(callback);
