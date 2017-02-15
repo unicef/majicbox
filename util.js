@@ -1,10 +1,9 @@
 var _ = require('lodash');
-var config = require('./config');
 var fs = require('fs');
 var Admin = require('./app/models/admin');
 var Mobility = require('./app/models/mobility');
 var Weather = require('./app/models/weather');
-var request = require('superagent');
+var amadeus_dir = require('./storage').amadeus_dir;
 
 function remove_file(path, file) {
   return new Promise(function(resolve, reject) {
@@ -26,7 +25,7 @@ function remove_file(path, file) {
 
 function csv_to_json(file) {
   return new Promise(function(resolve, reject) {
-    var csv_file = config.amadeus_dir + file;
+    var csv_file = amadeus_dir + file;
     // var json_file = config.amadeus_dir + file.replace(/csv$/, 'json');
     var Converter = require("csvtojson").Converter;
     var converter = new Converter({});
@@ -236,48 +235,6 @@ function get_egress_mobility(origin_admin_code, start_time, end_time) {
 //
 //   });
 // }
-// For magicbox-dashboard
-function summary_amadeus() {
-  return new Promise(function(resolve) {
-    var url = config.amadeus_url + 'api/collections';
-    request.get(url).then(response => {
-      console.log(response);
-      resolve(JSON.parse(response.text));
-    });
-  });
-}
-
-// For magicbox-dashboard Timechart AND for amadeus import
-function get_amadeus_file_names_already_in_mongo() {
-  return new Promise(function(resolve, reject) {
-    Mobility.aggregate([
-      {$group: {
-        _id: {
-          kind: "$kind",
-          source_file: "$source_file"
-        },
-        total: {$sum: 1}
-      }
-    },
-
-    {$group: {
-      _id: "$_id.kind",
-      files: {
-        $push: "$_id.source_file"
-      }
-    }
-    }
-    ]).exec(function(err, source_files) {
-      if (err) {return reject(err); }
-      resolve(
-        source_files.reduce(function(h, obj) {
-          h[obj._id] = obj.files;
-          return h;
-        }, {})
-      );
-    });
-  });
-}
 
 // For magicbox-dashboard calendar
 function summary_mobility() {
@@ -394,8 +351,6 @@ var stopwatch = (function() {
 })();
 
 module.exports = {
-  get_amadeus_file_names_already_in_mongo: get_amadeus_file_names_already_in_mongo,
-  summary_amadeus: summary_amadeus,
   summary_mobility: summary_mobility,
   remove_file: remove_file,
   csv_to_json: csv_to_json,

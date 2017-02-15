@@ -1,5 +1,3 @@
-// Note: this file is in .gitignore.
-
 var _ = require('lodash');
 
 var process_env_or = function(names, default_value) {
@@ -11,8 +9,9 @@ var process_env_or = function(names, default_value) {
 };
 
 module.exports = {
-  port: process_env_or('PORT', 8000),
+  collections_to_import: ['midt', 'traffic'],
   database: process_env_or(['PROD_DB', 'MONGOHQ_URL'],
-                           'mongodb://localhost/majicbox'),
+  'mongodb://localhost/majicbox'),
+  port: process_env_or('PORT', 8000),
   testdb: process_env_or('TEST_DB', 'mongodb://localhost/test')
 };
