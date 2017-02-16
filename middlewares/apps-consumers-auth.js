@@ -1,8 +1,8 @@
-import config from '../config'
+import secrets from '../secrets'
 
 export default function protect(req, res, next) {
   var token = req.query.token || null
-  var apps = config.apps
+  var apps = secrets.apps
 
   var app = apps.find(app => app.token === token)
 
