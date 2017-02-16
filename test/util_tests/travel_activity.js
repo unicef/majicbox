@@ -1,6 +1,6 @@
 var assert = require('chai').assert;
 var activity = require('../../lib/travel_activity');
-var helper = require('../../app/helpers/amadeus');
+var helper = require('../../app/helpers/csv-helper');
 var mongoose = require('mongoose');
 var testutil = require('../testutil');
 var path_to_csv = './test/data/amadeus_mobility/traffic/';

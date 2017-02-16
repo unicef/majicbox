@@ -6,7 +6,7 @@ var Mobility = require('../../app/models/mobility');
 var testutil = require('../testutil');
 var test_migrations_dir = './test/data/amadeus_mobility/traffic/';
 var test_migrations_csv_filename = 'traffic_W_1284_09.csv';
-var helper = require('../../app/helpers/amadeus');
+var helper = require('../../app/helpers/csv-helper');
 
 describe('Import amadeus mobility', function() {
   before(function initializeDatabase() {
@@ -34,6 +34,7 @@ describe('Import amadeus mobility', function() {
       'should store origin and only import file once',
       function(done) {
         var all_done = [];
+        
         csv.fromPath(
           test_migrations_dir + '/' + test_migrations_csv_filename,
           {headers: true}
