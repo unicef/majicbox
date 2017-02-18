@@ -1,8 +1,7 @@
 var async = require('async');
 var config = require('../../config');
-var csv = require('fast-csv');
+var secrets = require('../../secrets');
 var Mobility = require('../models/mobility');
-var moment = require('moment');
 var request = require('superagent');
 var azure = require('../../lib/azure_storage');
 var bluebird = require('bluebird');
@@ -10,11 +9,14 @@ var bluebird = require('bluebird');
 // For magicbox-dashboard
 exports.summary_amadeus = function() {
   return new Promise(function(resolve) {
-    var url = config.amadeus_url + 'api/collections';
-    request.get(url).then(response => {
-      console.log(response);
-      resolve(JSON.parse(response.text));
-    });
+    if (process.env.NODE_ENV === 'dev') {
+      resolve(secrets.amadeus_collections)
+    } else {
+      var url = config.amadeus_url + 'api/collections';
+      request.get(url).then(response => {
+        resolve(JSON.parse(response.text));
+      });
+    }
   });
 }
 
