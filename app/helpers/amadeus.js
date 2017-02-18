@@ -1,90 +1,89 @@
 var async = require('async');
-var csv = require('fast-csv');
+var config = require('../../config');
+var secrets = require('../../secrets');
 var Mobility = require('../models/mobility');
-var moment = require('moment');
+var request = require('superagent');
+var azure = require('../../lib/azure_storage');
+var bluebird = require('bluebird');
 
-exports.save_queue = async.queue(function(task, callback) {
-  task.catch(console.log).then(callback);
-}, 1);
+// For magicbox-dashboard
+exports.summary_amadeus = function() {
+  return new Promise(function(resolve) {
+    if (process.env.NODE_ENV === 'dev') {
+      resolve(secrets.amadeus_collections)
+    } else {
+      var url = config.amadeus_url + 'api/collections';
+      request.get(url).then(response => {
+        resolve(JSON.parse(response.text));
+      });
+    }
+  });
+}
 
-exports.import_csv_mongo = function(save_queue, csv_path, collection, blob_name) {
-  var count = 0;
-  var group = [];
-  var csv_file = csv_path + blob_name;
-  return new Promise(resolve => {
-    csv.fromPath(csv_file, {headers: true})
-    .on('data', function(data) {
-      count++;
-      group.push(
-        form_mobility(collection, data, blob_name)
-      );
-      if (group.length === 10000) {
-        console.log(count);
-        save_queue.push(
-          mongo_import_group(group)
-        );
-        group = [];
-      }
-    }).on('end', function() {
-      if (group.length > 0) {
-        console.log(count, 'last!');
-        save_queue.push(
-          mongo_import_group(group)
-        );
-        group = [];
-        resolve();
-      }
+/**
+ * For magicbox-dashboard, container: 'raw', 'aggregated'
+ *
+ * @param{string} container - Country.
+ * @return{Promise} Nested mapping from date to admin code to population value.
+ */
+exports.summary_azure = function(container) {
+  return new Promise(function(resolve) {
+    azure.get_collection_names(container).then(function(list) {
+      bluebird.reduce(list, function(h, col) {
+        return azure.get_blob_names(container, col)
+        .then(function(names) {
+          h[col] = names.filter(e => {
+            switch (col) {
+              case 'midt':
+              case 'schedule':
+                return e.match(/(\d{4}-\d{2}-\d{2})(_to_)(\d{4}-\d{2}-\d{2})/);
+              case 'traffic':
+                return e.match(/(\d{4}_\d{2})/);
+              default:
+                return null;
+            }
+          });
+          return h;
+        });
+      }, {}).then(function(h) {
+        resolve(h);
+      });
     });
   });
 };
 
-/**
- * Import a group of Mobility objects
- * @param{array} group: an array of mobility objects
- * @return{Promise}.
- */
-function mongo_import_group(group) {
+// For magicbox-dashboard Timechart AND for amadeus import
+exports.get_amadeus_file_names_already_in_mongo = function() {
   return new Promise(function(resolve, reject) {
-    Mobility.insertMany(group).then(function() {
-      return resolve();
-    }).catch(function(err) {
-      return reject(err);
+    Mobility.aggregate([
+      {$group: {
+        _id: {
+          kind: "$kind",
+          source_file: "$source_file"
+        },
+        total: {$sum: 1}
+      }
+    },
+
+    {$group: {
+      _id: "$_id.kind",
+      files: {
+        $push: "$_id.source_file"
+      }
+    }
+    }
+    ]).exec(function(err, source_files) {
+      if (err) {return reject(err); }
+      resolve(
+        source_files.reduce(function(h, obj) {
+          h[obj._id] = obj.files;
+          return h;
+        }, {})
+      );
     });
   });
 }
 
-/**
- * Create a mobility object
- * @param{string} collection: -midt, traffic, search, or schedule
- * @param{object} obj:  An object about to be made into an instance of a mobility
- * @param{string} blob_name: unicef_WB_2014-07-24_to_2014-07-30.csv, for instance
- * @return{Mobility}.
- */
-function form_mobility(collection, obj, blob_name) {
-  var mobility = {};
-  if (obj.year) {
-    // obj.year is simply a year: 2016
-    var year_date = moment(obj.year + '-01-01');
-    mobility.date = new Date(
-      moment(year_date).add(obj.week, 'weeks').format("YYYY-MM-DD")
-    ).toISOString();
-    mobility.date_to = new Date(
-      moment(mobility.date).add(7, 'days').format("YYYY-MM-DD")
-    ).toISOString();
-  } else {
-    mobility.date = new Date(obj.date).toISOString();
-    mobility.date_to = moment(new Date(obj.date).toISOString()).add(7, 'days').format("YYYY-MM-DD");
-  }
-
-  mobility.kind = collection;
-  mobility.provider = 'amadeus';
-  mobility.duration = 7;
-  mobility.source_file = blob_name;
-  mobility.origin_country_code = obj.origin_iso;
-  mobility.destination_country_code = obj.dest_iso;
-  mobility.origin_admin_code = obj.origin_id;
-  mobility.destination_admin_code = obj.dest_id;
-  mobility.count = obj.pax;
-
-  return new Mobility(mobility);
-}
+exports.save_queue = async.queue(function(task, callback) {
+  task.catch(console.log).then(callback);
+}, 1);
